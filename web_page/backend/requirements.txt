@@ -1,0 +1,9 @@
+flask
+python-dotenv
+flask-restful
+flask-sqlalchemy
+flask-jwt-extended
+flask_login
+werkzeug
+flask-mail
+mysqlclient
