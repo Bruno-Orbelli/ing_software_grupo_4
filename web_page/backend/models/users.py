@@ -1,4 +1,5 @@
-from database.db import db
+from utils.db import db
+from utils.ma import ma
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,3 +16,7 @@ class User(db.Model):
         self.uname = uname
         self.email = email
         self.password = password
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'fname', 'lname', 'uname', 'email', 'password', 'admin')

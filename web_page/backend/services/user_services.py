@@ -1,10 +1,13 @@
 from flask import Blueprint, jsonify, request, Response, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
-from models.users import User
-from database.db import db
+from flask_marshmallow import Marshmallow
+from models.users import User, UserSchema
+from utils.db import db
 
 users = Blueprint('users', __name__)
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
 
 @users.route('/registerUser', methods=['POST'])
 def registerUser():
@@ -25,7 +28,7 @@ def registerUser():
     password1 = request_data['password1']
     password2 = request_data['password2']
 
-    print(fname, lname, uname, email, password1, password2)
+    #print(fname, lname, uname, email, password1, password2)
 
     # Check if user email and username already exists
     user_mail = User.query.filter_by(email=email).first()
@@ -55,7 +58,7 @@ def registerUser():
         db.session.commit()
         flash('Account created!', category='success')
         # Redirect to home page #! Change this to redirect to login page
-        return jsonify({'success': True})
+        return user_schema.jsonify(new_user)
 
 @users.route('/loginUser', methods=['POST'])
 def loginUser():
@@ -89,3 +92,48 @@ def loginUser():
 def logoutUser():
     logout_user()
     return jsonify({'success': True}) #! Change this to redirect to login page
+
+@users.route('/listUsers', methods=['GET'])
+def listUsers():
+    users = User.query.all()
+    return users_schema.jsonify(users, many=True)
+
+@users.route('/getUser/<id>', methods=['GET'])
+def getUser(id):
+    user = User.query.get(id)
+    return user_schema.jsonify(user)
+
+@users.route('/updateUser/<id>', methods=['PUT'])
+def updateUser(id):
+    user = User.query.get(id)
+    request_data = request.get_json()
+
+    # Check if user exists
+    if not user:
+        return jsonify({'message': 'User does not exist'})
+
+    fname = request_data['fname']
+    lname = request_data['lname']
+    uname = request_data['uname']
+    email = request_data['email']
+    password = request_data['password']
+    user.fname = fname
+    user.lname = lname
+    user.uname = uname
+    user.email = email
+    user.password = generate_password_hash(password, method='sha256')
+    db.session.commit()
+
+    return user_schema.jsonify(user)
+
+@users.route('/deleteUser/<id>', methods=['DELETE'])
+def deleteUser(id):
+    user = User.query.get(id)
+
+    # Check if user exists
+    if not user:
+        return jsonify({'message': 'User does not exist'})
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': f'User {user.uname} deleted'})

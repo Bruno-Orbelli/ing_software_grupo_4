@@ -5,7 +5,9 @@ from services.user_services import users
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
-from database.db import db
+from utils.db import db
+from utils.ma import ma
+from utils.cors import cors
 import os
 
 def create_app():
@@ -32,5 +34,8 @@ def create_app():
     # Create database if not exists
     with app.app_context():
         db.create_all()
+
+    ma.init_app(app) # Initialize Marshmallow
+    cors.init_app(app) # Initialize CORS
     
     return app
