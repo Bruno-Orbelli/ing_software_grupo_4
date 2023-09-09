@@ -1,13 +1,12 @@
 from flask import Flask
 from os import path
-from .routes import views
 from services.user_services import users
+from services.message_services import messages
+from auth.auth import auth
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from dotenv import load_dotenv
-from utils.db import db
-from utils.ma import ma
-from utils.cors import cors
+from utils.utils import db, ma, cors, jwt
 import os
 
 def create_app():
@@ -28,8 +27,9 @@ def create_app():
 
     db.init_app(app) # Initialize database
 
-    app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(users, url_prefix='/')
+    app.register_blueprint(messages, url_prefix='/')
+    app.register_blueprint(auth, url_prefix='/')
 
     # Create database if not exists
     with app.app_context():
@@ -37,5 +37,6 @@ def create_app():
 
     ma.init_app(app) # Initialize Marshmallow
     cors.init_app(app) # Initialize CORS
+    jwt.init_app(app) # Initialize JWT
     
     return app
