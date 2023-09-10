@@ -1,101 +1,140 @@
-from flask import Blueprint, jsonify, request, Response, flash
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, login_required, logout_user, current_user
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, jwt_required
-from flask_marshmallow import Marshmallow
-from models.messages import Message, MessageSchema
+from flask import request
+from flask_jwt_extended import jwt_required, get_jwt_identity, jwt_required
+from flask_restx import Namespace, Resource
+from models.messages import Message
 from utils.utils import db
-from models.users import User, UserSchema
+from models.users import User
 
-messages = Blueprint('messages', __name__)
-message_schema = MessageSchema()
-messages_schema = MessageSchema(many=True)
+messages = Namespace('messages', description='Messages endpoints namespace')
 
-@messages.route('/saveMessage', methods=['POST'])
-@jwt_required()
-def saveMessage():
-    try:
-        ## Get data from request
-        request_data = request.get_json()
-        title = request_data['title']
-        content = request_data['content']
-        email = get_jwt_identity()
+message_model = Message.getModel(messages)
 
-        # Get user id from database
-        user_id = User.query.filter_by(email=email).first().id
-
-        # Add message to database
-        new_message = Message(
-            title=title, 
-            content=content, 
-            user_id=user_id
-            )
+@messages.route('/messages')
+class RecipesResources(Resource):
+    @messages.marshal_list_with(message_model)
+    def get(self):
+        '''
+        Method to list all messages. GET request.
+        '''
+        try:
+            messages = Message.query.all()
+            if messages:
+                return messages, 200
+            else:
+                return messages.abort(404, 'No messages found')
+        except Exception as e:
+            if not messages:
+                return messages.abort(404, 'No messages found')
+            return messages.abort(500, f'Error getting messages: {e}')
         
-        db.session.add(new_message)
-        db.session.commit()
+    @messages.marshal_with(message_model)   
+    @jwt_required()
+    def post(self):
+        '''
+        Method to add a new message. POST request.
+        '''
+        try:
+            ## Get data from request
+            request_data = request.get_json()
+            title = request_data['title']
+            content = request_data['content']
+            email = get_jwt_identity()
 
-        print('Message saved!')
-        # Return success message
-        return jsonify({'message': 'Message saved!'}), 201
-    except Exception as e:
-        # Return error message
-        return jsonify({'message': f'Error saving message: {e}'}), 500
+            # Get user id from database
+            user_id = User.query.filter_by(email=email).first().id
 
-@messages.route('/listMessages', methods=['GET'])
-def listMessages():
-    try:
-        messages = Message.query.all()
-        if messages:
-            return messages_schema.jsonify(messages, many=True)
-        else:
-            return jsonify({'message': 'No messages found'}), 404
-    except Exception as e:
-        return jsonify({'message': f'Error getting messages: {e}'}), 500
+            # Add message to database
+            new_message = Message(
+                title=title, 
+                content=content, 
+                user_id=user_id
+                )
+            
+            db.session.add(new_message)
+            db.session.commit()
 
-@messages.route('/message/<id>', methods=['GET'])
-def getMessage(id):
-    try:
-        message = Message.query.get(id)
-        return message_schema.jsonify(message), 200
-    except Exception as e:
-        return jsonify({'message': f'Error getting message: {e}'}), 500
+            # Return success message
+            return new_message, 201
+        except Exception as e:
+            # Return error message
+            return messages.abort(500, f'Error saving message: {e}')
 
-@messages.route('/editMessage/<id>', methods=['PUT'])
-@jwt_required()
-def editMessage(id):
-    try:
-        message = Message.query.get(id)
-        request_data = request.get_json()
+@messages.route('/message/<id>')
+class MessageResources(Resource):
 
-        # Check if user exists
-        if not message:
-            return jsonify({'message': 'Message does not exist'}), 404
+    @messages.marshal_with(message_model)
+    def get(self, id):
+        '''
+        Method to get a message by id. GET request.
+        '''
+        try:
+            message = Message.query.get(id)
+            if message:
+                return message, 200
+            else:
+                return messages.abort(404, 'Message does not exist')
+        except Exception as e:
+            if not message:
+                return messages.abort(404, 'Message does not exist')
+            return messages.abort(500, f'Error getting message: {e}')
+        
+    @messages.marshal_with(message_model)
+    @jwt_required()
+    def put(self, id):
+        '''
+        Method to update a message by id. PUT request.
+        '''
+        try:
+            message = Message.query.get(id)
+            request_data = request.get_json()
 
-        title = request_data['title']
-        content = request_data['content']
+            # Check if user exists
+            if not message:
+                return messages.abort(404, 'Message does not exist')
 
-        message.title = title
-        message.content = content
+            try:
+                title = request_data['title']
+            except KeyError:
+                title = None
+            try:
+                content = request_data['content']
+            except KeyError:
+                content = None
 
-        db.session.commit()
+            if not title:
+                title = message.title
+                print(title)
+            if not content:
+                content = message.content
 
-        return message_schema.jsonify(message), 200
-    except Exception as e:
-        return jsonify({'message': f'Error updating message: {e}'}), 500
+            message.title = title
+            message.content = content
 
-@messages.route('/deleteMessage/<id>', methods=['DELETE'])
-@jwt_required()
-def deleteMessage(id):
-    try:
-        message = Message.query.get(id)
+            db.session.commit()
 
-        # Check if user exists
-        if not message:
-            return jsonify({'message': f'Message with id {id} does not exist'}), 404
+            return message, 200
+        except Exception as e:
+            if not message:
+                return messages.abort(404, 'Message does not exist')
+            return messages.abort(500, f'Error updating message: {e}')
+        
+    @jwt_required()
+    def delete(self, id):
+        '''
+        Method to delete a message by id. DELETE request.
+        '''
+        try:
+            message = Message.query.get(id)
 
-        db.session.delete(message)
-        db.session.commit()
+            # Check if user exists
+            if not message:
+                return messages.abort(404, 'Message does not exist')
 
-        return jsonify({'message': f'Message {message.title} deleted'}), 200
-    except Exception as e:
-        return jsonify({'message': f'Error deleting message: {e}'}), 500
+            db.session.delete(message)
+            db.session.commit()
+
+            return {'message': f'Message {message.title} deleted'}, 200
+        except Exception as e:
+            if not message:
+                return messages.abort(404, 'Message does not exist')
+            return messages.abort(500, f'Error deleting message: {e}')

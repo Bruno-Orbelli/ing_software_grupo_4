@@ -1,82 +1,99 @@
-from flask import Blueprint, jsonify, request, Response, flash
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, jwt_required
-from models.users import User, UserSchema
+from flask import request
+from werkzeug.security import generate_password_hash
+from flask_jwt_extended import jwt_required, jwt_required
+from flask_restx import Namespace, Resource
+from models.users import User
 from utils.utils import db, ma, jwt, cors
 
-users = Blueprint('users', __name__)
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
+users = Namespace('users', description='Users endpoints namespace')
 
-@users.route('/listUsers', methods=['GET'])
-def listUsers():
-    '''
-    Method to list all users. GET request.
-    '''
-    try:
-        users = User.query.all()
-        return users_schema.jsonify(users, many=True), 200
-    except Exception as e:
-        return jsonify({'message': f'Error getting users: {e}'}), 500
+user_model = User.getModel(users)
 
-@users.route('/getUser/<id>', methods=['GET'])
-def getUser(id):
-    '''
-    Method to get a user by id. GET request.
-    '''
-    try:
-        user = User.query.get(id)
-        if user:
-            return user_schema.jsonify(user), 200
-        else:
-            return jsonify({'message':'User does not exist'}), 404
-    except Exception as e:
-        return jsonify({'message':f'Error getting user: {e}'}), 500
+@users.route('/users')
+class UsersResource(Resource):
+    @users.marshal_list_with(user_model)
+    def get(self):
+        '''
+        Method to list all users. GET request.
+        '''
+        try:
+            users = User.query.all()
+            if users:
+                return users, 200
+            else:
+                return users.abort(404, 'No users found')
+        except Exception as e:
+            if not users:
+                return users.abort(404, 'No users found')
+            return users.abort(500, f'Error getting users: {e}')
 
-@users.route('/updateUser/<id>', methods=['PUT'])
-@jwt_required()
-def updateUser(id):
-    '''
-    Method to update a user by id. PUT request.
-    '''
-    try:
-        user = User.query.get(id)
-        request_data = request.get_json()
+@users.route('/user/<id>')
+class UserResources(Resource):
+    @users.marshal_with(user_model)
+    def get(self, id):
+        '''
+        Method to get a user by id. GET request.
+        '''
+        try:
+            user = User.query.get(id)
+            if user:
+                return user, 200
+            else:
+                return users.abort(404, 'User does not exist')
+        except Exception as e:
+            if not user:
+                return users.abort(404, 'User does not exist')
+            return users.abort(500, f'Error getting user: {e}')
+    
+    @jwt_required()
+    @users.marshal_with(user_model)
+    def put(self, id):
+        '''
+        Method to update a user by id. PUT request.
+        '''
+        try:
+            user = User.query.get(id)
+            request_data = request.get_json()
 
-        # Check if user exists
-        if not user:
-            return jsonify({'message': 'User does not exist'})
+            # Check if user exists
+            if not user:
+                return users.abort(404, 'User does not exist')
 
-        fname = request_data['fname']
-        lname = request_data['lname']
-        uname = request_data['uname']
-        email = request_data['email']
-        password = request_data['password']
+            fname = request_data['fname']
+            lname = request_data['lname']
+            uname = request_data['uname']
+            email = request_data['email']
+            password = request_data['password']
 
-        user.fname = fname
-        user.lname = lname
-        user.uname = uname
-        user.email = email
-        user.password = generate_password_hash(password, method='sha256')
+            user.fname = fname
+            user.lname = lname
+            user.uname = uname
+            user.email = email
+            user.password = generate_password_hash(password, method='sha256')
 
-        db.session.commit()
+            db.session.commit()
 
-        return jsonify({'message': f'User {user.uname} updated successfully'}), 201
-    except Exception as e:
-        return jsonify({'message': f'Error updating user: {e}'}), 500
+            return user, 200
+        except Exception as e:
+            if not user:
+                return users.abort(404, 'User does not exist')
+            return users.abort(500, f'Error updating user: {e}')
+        
+    @jwt_required()
+    def delete(self, id):
+        '''
+        Method to delete a user by id. DELETE request.
+        '''
+        try:
+            user = User.query.get(id)
 
-@users.route('/deleteUser/<id>', methods=['DELETE'])
-@jwt_required()
-def deleteUser(id):
-    try:
-        user = User.query.get(id)
+            # Check if user exists
+            if not user:
+                return {'message': 'User does not exist'}, 404
 
-        # Check if user exists
-        if not user:
-            return jsonify({'message': 'User does not exist'})
+            db.session.delete(user)
+            db.session.commit()
+            return {'message': f'User {user.uname} deleted'}, 200
+        except Exception as e:
+            return {'message': f'Error deleting user: {e}'}, 500
 
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify({'message': f'User {user.uname} deleted'})
-    except Exception as e:
-        return jsonify({'message': f'Error deleting user: {e}'}), 500

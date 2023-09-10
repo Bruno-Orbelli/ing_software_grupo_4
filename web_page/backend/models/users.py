@@ -1,6 +1,7 @@
 from utils.utils import db, ma
 from marshmallow import fields
-from models.messages import MessageSchema
+from models.messages import Message
+from flask_restx import fields
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -12,19 +13,22 @@ class User(db.Model):
     messages = db.relationship('Message', backref='user', lazy=True) # This is to get the messages of the user
     admin = db.Column(db.Boolean, default=False)
 
-    def __init__(self, fname, lname, uname, email, password):
-        self.fname = fname
-        self.lname = lname
-        self.uname = uname
-        self.email = email
-        self.password = password
+    def getModel(users):
+        message_model = Message.getModel(users)
+        user_model = users.model(
+        "User", {
+            'id': fields.Integer(description='User id'),
+            'fname': fields.String(description='User first name'),
+            'lname': fields.String(description='User last name'),
+            'uname': fields.String(description='User username'),
+            'email': fields.String(description='User email'),
+            'password': fields.String(description='User password'),
+            'messages': fields.List(fields.Nested(message_model),description='User messages'),
+            'admin': fields.Boolean(description='User admin status')
+        })
+
+        return user_model
 
     def __repr__(self):
         return f'<User {self.uname}>'
 
-class UserSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'fname', 'lname', 'uname', 'email', 'password', 'messages', 'admin')
-
-    # This is to get the messages of the user and serialize them so they can be returned in the response
-    messages = fields.Nested('MessageSchema', many=True)

@@ -1,4 +1,5 @@
 from utils.utils import db, ma
+from flask_restx import fields
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,15 +8,17 @@ class Message(db.Model):
     likes = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, content, user_id):
-        self.title = title
-        self.content = content
-        #self.likes = likes #! Ver tema de los likes
-        self.user_id = user_id
+    def getModel(messages):
+        message_model = messages.model(
+        "Message", {
+            'id': fields.Integer(description='Message id'),
+            'title': fields.String(description='Message title'),
+            'content': fields.String(description='Message content'),
+            'likes': fields.Integer(description='Message likes'),
+            'user_id': fields.Integer(description='User id')
+        })
+
+        return message_model
 
     def __repr__(self):
         return f'<Message {self.title}>'
-
-class MessageSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'title', 'content', 'likes', 'user_id')

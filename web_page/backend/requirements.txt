@@ -8,3 +8,4 @@ flask_login
 werkzeug
 flask-mail
 mysqlclient
+marshmallow-sqlalchemy
