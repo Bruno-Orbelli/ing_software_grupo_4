@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Message from '../components/message';
 import axios from 'axios';
-import {Link} from 'react-router-dom';
 
 const Home = () => {
 
   const [messages, setMessages] = useState([]); // Esto es un hook
   const [users, setUsers] = useState([]); // Esto es un hook
     useEffect(() => {
+      /* eslint-disable react-hooks/exhaustive-deps */
         getMessages(); // Esto es lo que se ejecuta cuando se carga la página
     }, []);
 

@@ -9,9 +9,10 @@ import Navbar from './components/navbar';
 
 function App() {
   return (
-      <div className='container-fluid'>
-        <Navbar />
+      <div>
         <BrowserRouter>
+          <Navbar />
+          <div className="container p-4">
           <Routes>
             <Route path='/register' element={<Register />} />
             <Route path='/login' element={<LoginUser />} />
@@ -19,6 +20,7 @@ function App() {
             <Route path='/users' element={<ShowUsers />} />
             <Route path='/users/user/:id/edit' element={<EditUser />} />
           </Routes>
+          </div>
         </BrowserRouter>
         </div>
   );

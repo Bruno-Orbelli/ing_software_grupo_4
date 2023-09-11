@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-export default function LoginUser() {
+const LoginUser = () => {
 
     const navigate = useNavigate(); // Esto es un hook para redirigir a otra página
 
@@ -17,8 +17,9 @@ export default function LoginUser() {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        axios.post(`http://127.0.0.1:7000/loginUser`, inputs).then(function(response) {
+        axios.post(`/auth/login`, inputs).then(function(response) {
             // Check if response.data is True or False
+            console.log(response.data);
             if (response.data['success'] === false) {
                 alert('Incorrect username or password');
                 return;
@@ -56,8 +57,11 @@ export default function LoginUser() {
                         </form>
                     </div>
                     <div className='col-2'></div>
+                    <a href="/register">Register</a>
                 </div>
             </div>
         </div>
     )
 }
+
+export default LoginUser

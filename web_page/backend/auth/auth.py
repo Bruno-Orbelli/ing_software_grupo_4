@@ -45,8 +45,8 @@ class RegisterUser(Resource):
             # Rerturn success message
             #return user_schema.jsonify(new_user), 201
             return {'message': f'User {new_user.uname} created successfully'}, 201
-        except:
-            return {'message': 'Error creating user'}, 500
+        except Exception as e:
+            return {'message': f'Error creating user: {e}'}, 500
 
 @auth.route('/login')
 class LoginUser(Resource):

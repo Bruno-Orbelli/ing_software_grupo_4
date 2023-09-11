@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-export default function RegisterUser() {
+const Register = () => {
 
     const navigate = useNavigate(); // Esto es un hook para redirigir a otra página
 
@@ -17,7 +17,7 @@ export default function RegisterUser() {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        axios.post(`http://127.0.0.1:7000/registerUser`, inputs).then(function(response) {
+        axios.post(`/auth/register`, inputs).then(function(response) {
             console.log(response.data); // Se imprime la respuesta (Despues quitar)
             navigate('/'); // Se redirige a la página principal
         }).catch(err => {
@@ -31,7 +31,7 @@ export default function RegisterUser() {
                 <div className='row'>
                     <div className='col-2'></div>
                     <div className='col-8'>
-                        <h1>Create user</h1>
+                        <h1>Register</h1>
                         <form onSubmit={handleSubmit}>
                             <div className='mb-3'>
                                 <label>First Name</label>
@@ -66,3 +66,5 @@ export default function RegisterUser() {
         </div>
     )
 }
+
+export default Register
