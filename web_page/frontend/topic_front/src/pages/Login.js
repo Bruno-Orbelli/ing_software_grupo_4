@@ -1,18 +1,77 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom'; 
+import { login } from '../components/auth';
+import Swal from 'sweetalert2';
 
 const Login = () => {
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const navigate = useNavigate()
 
-    const loginUser = () => {
-        //console.log('Form submitted')
+    const { register, handleSubmit, reset, formState: { errors } } = useForm(); 
 
-        // Reset form when submitted
-        setEmail('')
-        setPassword('')
+    const loginUser = async (data) => {
+        //console.log(data)
+
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }
+        
+        fetch('/auth/login', requestOptions)
+        .then(response => Promise.all([
+            response.json(),
+            response.status
+        ]))
+        .then(data => {
+            const message = data[0].message
+            const access_token = data[0].access_token
+            //const refresh_token = data[0].refresh_token
+            const status = data[1]
+
+            if (status === 200) {
+                fireToastSuccess(message)
+                //console.log(access_token)
+                //console.log(refresh_token)
+
+                login(access_token)
+                navigate('/')
+            }
+            else {
+                fireToastError(message)
+            }
+
+        })
+        .catch(err => console.log(err))
+
+        reset()
+    }
+
+    const fireToastSuccess = (message) => {
+        Swal.fire({
+            title: 'Success!',
+            text: message,
+            icon: 'success',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000
+        })
+    }
+
+    const fireToastError = (message) => {
+        Swal.fire({
+            title: 'Error!',
+            text: message,
+            icon: 'error',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 6000
+        })
     }
 
     return (
@@ -27,12 +86,20 @@ const Login = () => {
                         <form>
                             <Form.Group>
                                 <Form.Label>Email</Form.Label>
-                                <Form.Control type="email" name="email" value={email} onChange={(e)=>{setEmail(e.target.value)}}/>
-                                <Form.Label>Password</Form.Label>
-                                <Form.Control type="password" name="password" value={password} onChange={(e)=>{setPassword(e.target.value)}}/>
+                                <Form.Control type="email" {...register("email", { required: true, maxLength: 80 })}/>
+                                {errors.email?.type === "required" && <p style={{ color: "red" }}><small>Email is required</small></p>}
+                                {errors.email?.type === "maxLength" && <p style={{ color: "red" }}><small>Email is too long</small></p>}
                             </Form.Group>
+                            <p></p>
                             <Form.Group>
-                                <Button as="sub" variant="primary" onClick={loginUser} className='mt-3'>
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control type="password" {...register("password", { required: true, minLength: 8 })}/>
+                                {errors.password?.type === "required" && <p style={{ color: "red" }}><small>Password is required</small></p>}
+                                {errors.password?.type === "minLength" && <p style={{ color: "red" }}><small>Password is too short</small></p>}
+                            </Form.Group>
+                            <p></p>
+                            <Form.Group>
+                                <Button as="sub" variant="primary" onClick={handleSubmit(loginUser)} className='mt-1'>
                                     Login
                                 </Button>
                             </Form.Group>
