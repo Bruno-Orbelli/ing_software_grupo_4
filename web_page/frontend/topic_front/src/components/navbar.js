@@ -14,21 +14,24 @@ const LoggedInLinks = () => {
             <>
                 {isAdmin ?
                     <li className="nav-item active">
-                        <Link className="nav-link" to="/users">ABM</Link>
+                        <button className='btn btn-dark' aria-expanded="false">
+                            <Link className="nav-link" to="/users">ABM</Link>
+                        </button>
                     </li>
                     : null}
-                <li className="nav-item dropdown">
-                    <Link className="nav-link dropdown-toggle" to="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Account
-                    </Link>
-                    <div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <Link className="dropdown-item" to="#">Profile</Link>
-                        <Link className="dropdown-item" to="#">Logout</Link>
-                    </div>
-                </li>
-                <li>
-                    <Link className="nav-link" to="/login" onClick={() => { logout() }}>Log out</Link>
-                </li>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Account
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><Link class="dropdown-item" to="#">Profile</Link></li>
+                                <li><Link class="dropdown-item" to="/login" onClick={() => { logout() }}>Log out</Link></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </>
         )
     }
@@ -58,7 +61,9 @@ const Navbar = () => {
             <div className="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul className="navbar-nav">
                     <li className="nav-item">
-                        <Link className="nav-link" to="#">Search</Link>
+                        <button className='btn btn-dark'>
+                            <Link className="nav-link" to="#">Search</Link>
+                        </button>
                     </li>
                     {logged ? <LoggedInLinks /> : <LoggedOutLinks />}
                 </ul>

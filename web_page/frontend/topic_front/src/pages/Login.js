@@ -27,19 +27,22 @@ const Login = () => {
             response.status
         ]))
         .then(data => {
+            
             const message = data[0].message
             const access_token = data[0].access_token
             const refresh_token = data[0].refresh_token
             const status = data[1]
-            const role = JSON.parse(atob(access_token.split('.')[1])).role
-
-            const session = {
-                access_token: access_token,
-                refresh_token: refresh_token,
-                role: role
-            }
-
+            
             if (status === 200) {
+
+                const role = JSON.parse(atob(access_token.split('.')[1])).role
+
+                const session = {
+                    access_token: access_token,
+                    refresh_token: refresh_token,
+                    role: role
+                }
+
                 fireToastSuccess(message)
                 //console.log(access_token)
                 //console.log(refresh_token)
@@ -48,6 +51,8 @@ const Login = () => {
                 navigate('/')
             }
             else {
+                // console.log(message)
+                // console.log(status)
                 fireToastError(message)
             }
 
@@ -115,6 +120,14 @@ const Login = () => {
                                     Do not have an account?
                                     <Link className='m-2' to="/register">
                                         Create account
+                                    </Link>
+                                </small>
+                            </Form.Group>
+                            <Form.Group className='mt-2'>
+                                <small>
+                                    Forgot your password?
+                                    <Link className='m-2' to="#">
+                                        Reset password
                                     </Link>
                                 </small>
                             </Form.Group>
