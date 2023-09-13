@@ -1,33 +1,76 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import {Link} from 'react-router-dom';
+//import axios from 'axios';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../components/auth';
+import NotFound from './NotFound';
+import Swal from 'sweetalert2';
 
-const ShowUsers = () => {
+const ShowABM = () => {
 
     const [users, setUsers] = useState([]); // Esto es un hook
+
     useEffect(() => {
-        getUsers(); // Esto es lo que se ejecuta cuando se carga la página
+        GetUsers();
     }, []);
 
-    function getUsers() { // Esta función hace una petición GET a la API
-        axios.get('/users/users') // La API está en el puerto 7000
-            .then(function(response) {
-                console.log(response.data);
-                setUsers(response.data); // Se guarda la respuesta en el hook
-            })
-            .catch(err => { // Si hay un error, se ejecuta esta función
-                console.log(err);
-            });
+    const GetUsers = () => {
+        fetch('/users/users')
+        .then(response => Promise.all([
+            response.json(),
+            response.status
+        ]))
+        .then(data => {
+            const users = data[0]
+            const status = data[1]
+            if (status === 200) {
+                //console.log(users)
+                setUsers(users)
+            }
+            else {
+                console.log(users)
+            }
+        })
     }
 
-    const deleteUser = (id) => {
-        axios.delete(`/users/user/${id}`).then(function(response) {
-            console.log(response.data);
-            getUsers();
-        }).catch(err => {
-            console.log(err);
-        });
-        alert("Successfully deleted!");
+    const DeleteUser = (id) => {
+
+        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+
+        fetch(`/users/user/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(token).access_token}`
+            }
+        }).then(response => Promise.all([
+            response.json(),
+            response.status
+        ]))
+        .then(data => {
+            const message = data[0]
+            const status = data[1]
+            if (status === 200) {
+                //console.log(message)
+                Swal.fire({
+                    icon: 'success',
+                    title: 'User deleted successfully',
+                    text: message.message,
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+                GetUsers();
+            }
+            else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message.message,
+                    showConfirmButton: true
+                })
+            }
+        })
     }
 
     return (
@@ -35,12 +78,13 @@ const ShowUsers = () => {
             <div className='container h-100'>
                 <div className='row h-100'>
                     <div className='col-12'>
-                        <p><Link to="/register" className='btn btn-success'>Add New User</Link></p>
-                        <h1>List Users</h1>
+                        <hr></hr>
+                        <h1>Users ABM</h1>
+                        <hr></hr>
                         <table className='table table-bordered table-striped'>
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>User Name</th>
                                     <th>Email</th>
@@ -50,13 +94,13 @@ const ShowUsers = () => {
                             <tbody>
                                 {users.map((user, key) =>
                                     <tr key={key}>
-                                        <td>{key + 1}</td>
+                                        <td>{user.id}</td>
                                         <td>{user.fname + ' ' + user.lname}</td>
                                         <td>{user.uname}</td>
                                         <td>{user.email}</td>
                                         <td>
-                                            <Link to={`user/${user.id}/edit`} className='btn btn-success' style={{marginRight: "10px"}}>Edit</Link>
-                                            <button onClick={() => deleteUser(user.id)} className='btn btn-danger'>Delete</button>
+                                            <Link to={`user/${user.id}/edit`} className='btn btn-success' style={{ marginRight: "10px" }}>Edit</Link>
+                                            <button onClick={() => DeleteUser(user.id)} className='btn btn-danger'>Delete</button>
                                         </td>
                                     </tr>
                                 )}
@@ -66,7 +110,34 @@ const ShowUsers = () => {
                 </div>
             </div>
         </div>
-    );
+    )
+}
+
+const LoggedInLinks = () => {
+
+    const [user, role] = useAuth();
+
+    if (user) {
+        const isAdmin = role.role;
+        return (
+            <>
+                {isAdmin ? <ShowABM /> : <NotFound />}
+            </>
+        )
+    } 
+
+}
+
+const ShowUsers = () => {
+
+    const [logged] = useAuth()
+
+    return (
+        <>
+            {logged ? <LoggedInLinks /> : <NotFound />}
+        </>
+    )
+
 }
 
 export default ShowUsers

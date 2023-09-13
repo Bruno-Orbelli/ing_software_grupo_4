@@ -29,15 +29,22 @@ const Login = () => {
         .then(data => {
             const message = data[0].message
             const access_token = data[0].access_token
-            //const refresh_token = data[0].refresh_token
+            const refresh_token = data[0].refresh_token
             const status = data[1]
+            const role = JSON.parse(atob(access_token.split('.')[1])).role
+
+            const session = {
+                access_token: access_token,
+                refresh_token: refresh_token,
+                role: role
+            }
 
             if (status === 200) {
                 fireToastSuccess(message)
                 //console.log(access_token)
                 //console.log(refresh_token)
 
-                login(access_token)
+                login(session)
                 navigate('/')
             }
             else {

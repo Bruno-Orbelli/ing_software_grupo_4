@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import jsonify, request, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, jwt_required
@@ -68,9 +69,9 @@ class LoginUser(Resource):
             if db_user:
                 if check_password_hash(db_user.password, password):
                     # Create access token, this token is used to access the protected endpoints of our API.
-                    access_token = create_access_token(identity=db_user.email)
+                    access_token = create_access_token(identity=db_user.email, additional_claims={'role': db_user.admin}, expires_delta=timedelta(minutes=30))
                     # Create refresh token, this token is used to refresh the access token.
-                    refresh_token = create_refresh_token(identity=db_user.email)
+                    refresh_token = create_refresh_token(identity=db_user.email, expires_delta=timedelta(minutes=30))
 
                     return {
                         'message': f'User {db_user.uname} logged in successfully',
@@ -96,7 +97,7 @@ class RefreshToken(Resource):
             current_user = get_jwt_identity()
 
             # Create the access token
-            access_token = create_access_token(identity=current_user)
+            access_token = create_access_token(identity=current_user, expires_delta=timedelta(minutes=30))
 
             return {'access_token': access_token}, 200
         except Exception as e:

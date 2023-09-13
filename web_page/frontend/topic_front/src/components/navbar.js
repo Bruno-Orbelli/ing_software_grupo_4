@@ -3,25 +3,36 @@ import { Link } from 'react-router-dom';
 import { useAuth, logout } from './auth';
 
 const LoggedInLinks = () => {
-    return (
-        <>
-            <li className="nav-item active">
-                <Link className="nav-link" to="/users">ABM</Link>
-            </li>
-            <li className="nav-item dropdown">
-                <Link className="nav-link dropdown-toggle" to="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Account
-                </Link>
-                <div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <Link className="dropdown-item" to="#">Profile</Link>
-                    <Link className="dropdown-item" to="#">Logout</Link>
-                </div>
-            </li>
-            <li>
-                <Link className="nav-link" to="/login" onClick={() => {logout()}}>Log out</Link>
-            </li>
-        </>
-    )
+
+    // Extract role from session
+    const [user, role] = useAuth()
+
+    if (user) {
+        const isAdmin = role.role
+        //console.log(isAdmin)
+        return (
+            <>
+                {isAdmin ?
+                    <li className="nav-item active">
+                        <Link className="nav-link" to="/users">ABM</Link>
+                    </li>
+                    : null}
+                <li className="nav-item dropdown">
+                    <Link className="nav-link dropdown-toggle" to="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Account
+                    </Link>
+                    <div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <Link className="dropdown-item" to="#">Profile</Link>
+                        <Link className="dropdown-item" to="#">Logout</Link>
+                    </div>
+                </li>
+                <li>
+                    <Link className="nav-link" to="/login" onClick={() => { logout() }}>Log out</Link>
+                </li>
+            </>
+        )
+    }
+
 }
 
 const LoggedOutLinks = () => {

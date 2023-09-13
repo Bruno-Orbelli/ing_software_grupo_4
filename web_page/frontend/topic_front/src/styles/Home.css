@@ -1,0 +1,26 @@
+#tendencies-col {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    padding-left: 20rem;
+}
+
+#following-col {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    padding-right: 20rem;
+}
+
+#Messages-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#new-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    padding-left: 9rem;
+}

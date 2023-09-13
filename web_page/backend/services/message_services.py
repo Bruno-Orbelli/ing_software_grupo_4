@@ -14,14 +14,17 @@ class RecipesResources(Resource):
     @messages.marshal_list_with(message_model)
     def get(self):
         '''
-        Method to list all messages. GET request.
+        Method to list all messages. GET request. This receive in body:
+        - title: string
+        - content: string
         '''
         try:
             messages = Message.query.all()
-            if messages:
-                return messages, 200
-            else:
+            # Get username from user_id
+            if not messages:
                 return messages.abort(404, 'No messages found')
+            else:
+                return messages, 200
         except Exception as e:
             if not messages:
                 return messages.abort(404, 'No messages found')
@@ -36,6 +39,7 @@ class RecipesResources(Resource):
         try:
             ## Get data from request
             request_data = request.get_json()
+
             title = request_data['title']
             content = request_data['content']
             email = get_jwt_identity()
