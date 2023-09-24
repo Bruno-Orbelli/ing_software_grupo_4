@@ -1,0 +1,29 @@
+.App-header {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+#App {
+  background-color: #282c34;
+  height: 100%;
+  width: 100%;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+#blank {
+  height: 18.7rem;
+  width: 100%;
+}
+
+html, body {
+  background-color: #282c34;
+}
+

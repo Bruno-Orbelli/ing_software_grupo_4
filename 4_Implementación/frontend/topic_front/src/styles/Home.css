@@ -1,0 +1,161 @@
+#tendencies-col {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    padding-left: 20rem;
+}
+
+#following-col {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    padding-right: 20rem;
+}
+
+#Messages-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#new-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    padding-left: 9rem;
+}
+
+#Messages {
+    color: azure;
+    font-family: 'Roboto';
+}
+
+#home-titles {
+    color: #9ca7a7;
+    font-family: 'Roboto';
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+#divider-home {
+    color: #6e7275;
+    width: 60rem;
+}
+
+#welcome {
+    color: azure;
+    font-size: 3.2rem;
+    font-family: 'Roboto', sans-serif;
+}
+
+#welcomet {
+    color: azure;
+    font-size: 25px;
+    font-family: 'Roboto', sans-serif;
+    padding-bottom: 1rem;
+}
+
+#account {
+    color: azure;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+}
+
+#divider {
+    color: #6e7275;
+}
+
+#login-button {
+    background-color: #494996;
+    color: azure;
+    border-color: #494996;
+    border-radius: 10rem;
+    size: 100px;
+    width: 8rem;
+    height: 3rem;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0.7rem;
+    box-shadow: 5px 5px 30px #12141f67;
+    font-family: 'Roboto', sans-serif;
+}
+
+#login-button:hover {
+    background-color: #5b5bb8;
+    color: azure;
+    border-color: rgb(91, 91, 184);
+    border-radius: 10rem;
+    size: 100px;
+    width: 8rem;
+    height: 3rem;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0.6rem;
+    box-shadow: 5px 5px 30px #12141f67;
+}
+
+#create-account {
+    color: azure;;
+}
+
+#create-account:hover {
+    color: rgb(91, 91, 184);
+}
+
+@media (max-width:1400px) {
+
+    #image {
+        height: 25rem;
+        width: 25rem;
+        object-fit: fill;
+        opacity: 0.8;
+        background-image: url('assets/welcome.png');
+        background-size: 26rem;
+        background-repeat: no-repeat;
+        margin-top: 4rem;
+    }
+
+    #welcome-col {
+        margin-top: 6rem;
+        padding-left: 1rem;
+        width: 30rem;
+    }
+}
+
+@media (min-width:1400px) {
+
+    #image {
+        height: 25rem;
+        width: 35rem;
+        object-fit: fill;
+        opacity: 0.8;
+        background-image: url('assets/welcome.png');
+        background-size: 35rem;
+        background-repeat: no-repeat;
+    }
+    #welcome-col {
+        margin-top: 6rem;
+        padding-left: 5rem;
+    }
+}
+
+#welcome-row {
+    margin-top: 5rem;
+}
+
+#title-col {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+
+#tab-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+}
+
+

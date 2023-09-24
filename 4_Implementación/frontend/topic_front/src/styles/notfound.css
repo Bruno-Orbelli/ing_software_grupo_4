@@ -1,0 +1,47 @@
+#notfoundimage {
+    height: 40rem;
+    width: 50rem;
+    object-fit: fill;
+    opacity: 1;
+    background-image: url('assets/error404.png');
+    background-size: 45rem;
+    background-repeat: no-repeat;
+    margin-top: -5rem;
+    align-items: center;
+}
+
+#not-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+}
+
+#go-home {
+    background-color: #494996;
+    color: azure;
+    border-color: #494996;
+    border-radius: 10rem;
+    size: 200px;
+    width: 12rem;
+    height: 5rem;
+    padding-top: 0.7rem;
+    box-shadow: 5px 5px 30px #12141f67;
+    font-family: 'Roboto', sans-serif;
+    font-size: 25px;
+    margin-right: 5rem;
+}
+
+#go-home:hover {
+    background-color: #5b5bb8;
+    color: azure;
+    border-color: #5b5bb8;
+    border-radius: 10rem;
+    size: 200px;
+    width: 12rem;
+    height: 5rem;
+    padding-top: 0.7rem;
+    box-shadow: 5px 5px 30px #12141f67;
+    font-family: 'Roboto', sans-serif;
+    font-size: 25px;
+}

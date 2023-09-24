@@ -1,0 +1,37 @@
+#reg-form {
+    background-color: #323844;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 5px 5px 30px #12141fa1;
+    width: 50rem;
+}
+
+#reg-button-form {
+    margin-left: 17.5rem;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+
+#container {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+#register-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50rem;
+}
+
+#name-row {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+
+#name-group {
+    width: 22.3rem;
+}
+

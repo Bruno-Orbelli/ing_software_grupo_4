@@ -1,0 +1,107 @@
+#ABM-title-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    font-family: 'Roboto';
+    font-style: normal;
+}
+
+#abm-table {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #d9d0dd;
+    font-family: 'Roboto';
+}
+
+thead th:nth-child(1) {
+    width: 5%;
+    color: azure;
+    font-weight: 1;
+}
+
+thead th:nth-child(2) {
+    width: 25%;
+    color: azure;
+    font-weight: 1;
+}
+
+thead th:nth-child(3) {
+    width: 20%;
+    color: azure;
+    font-weight: 1;
+}
+
+thead th:nth-child(4) {
+    width: 30%;
+    color: azure;
+    font-weight: 1;
+}
+
+thead th:nth-child(5) {
+    width: 13%;
+    color: azure;
+    font-weight: 1;
+}
+
+
+th {
+    letter-spacing: 2px;
+}
+
+td {
+    letter-spacing: 1px;
+}
+
+tbody td,
+tr {
+    text-align: center;
+}
+
+thead th,
+tfoot th,
+tfoot td {
+    background: linear-gradient(to bottom,
+    #323844,
+    #323844);
+    border: 3px solid #444146;
+    color: azure;
+}
+
+#table-header {
+    color: azure;
+}
+
+#abm-header {
+    border: 1px solid #444146;
+    color: azure;
+}
+
+#edit-button {
+    background-color: #494996;
+    border-color: #494996;
+    border-radius: 10rem;
+    font-family: 'Roboto';
+}
+
+#edit-button:hover {
+    background-color: #5b5bb8;
+    border-color: #5b5bb8;
+    border-radius: 10rem;
+    font-family: 'Roboto';
+}
+
+#delete-button {
+    background-color: #ce1a50;
+    border-color: #ce1a50;
+    border-radius: 10rem;
+    font-family: 'Roboto';
+}
+
+#delete-button:hover {
+    background-color: #bb1849;
+    border-color: #bb1849;
+    border-radius: 10rem;
+    font-family: 'Roboto';
+}

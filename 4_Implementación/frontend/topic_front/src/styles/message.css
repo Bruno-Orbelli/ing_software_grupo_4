@@ -1,0 +1,61 @@
+#message {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    width: 60rem;
+    background-color: #323844;
+    padding: 5px;
+}
+
+#message-body {
+    color: #d5e2e2;
+    font-family: 'Roboto';
+}
+
+#profile-img {
+    height: 6rem;
+    width: 4rem;
+    object-fit: fill;
+    opacity: 1;
+    background-image: url('assets/profile.png');
+    background-size: 4rem;
+    background-repeat: no-repeat;
+    margin-left: 2rem;
+    margin-top: 1rem;
+}
+
+#stars {
+    color: #ada2b1;
+    padding-top: 0.5rem;
+}
+
+#rname {
+    color: #8c9696;
+    font-size: 13px;
+    font-family: 'Roboto';
+    margin-top: 0.15rem;
+    margin-left: 0.1rem;
+}
+
+#name-title {
+    margin-bottom: -0.3rem;
+    padding-bottom: 0rem;
+}
+
+#message-title {
+    margin-top: 0.8rem;
+}
+
+#date {
+    color: #ada2b188;
+    font-size: 15px;
+    font-family: 'Roboto';
+    margin-left: 3rem;
+}
+
+#time-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: right;
+    align-content: right;
+}

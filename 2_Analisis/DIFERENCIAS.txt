@@ -1,0 +1,1 @@
+- El Diagrama de clases de Analisis representa el sistema en su conjunto. Hicimos cualquier cagada.

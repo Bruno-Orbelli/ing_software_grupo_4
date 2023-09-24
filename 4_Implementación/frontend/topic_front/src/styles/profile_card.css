@@ -1,0 +1,38 @@
+#profile-pic {
+    border-radius: 110px;
+    width: 140px;
+    margin-left: 3rem;
+}
+
+#profile-card {
+    width: 60rem;
+    border: 0;
+    justify-content: center;
+    align-content: center;
+    background-color: #282c34;
+    color: azure;
+    font-family: 'Roboto';
+}
+
+#presentation-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+}
+
+#profile-image {
+    height: 8.5rem;
+    width: 10rem;
+    object-fit: fill;
+    opacity: 1;
+    background-image: url('assets/profile.png');
+    background-size: 8.5rem;
+    background-repeat: no-repeat;
+    margin-top: 0rem;
+    margin-right: 0.8rem;
+}
+
+#role {
+    color: #a892b4;
+}

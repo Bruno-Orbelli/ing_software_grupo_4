@@ -1,0 +1,33 @@
+#edit-form {
+    background-color: #323844;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 5px 5px 30px #12141fa1;
+    width: 45rem;
+}
+
+#edit-col {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    width: 45rem;
+}
+
+#edit-form-button {
+    background-color: #494996;
+    color: azure;
+    border-color: #494996;
+    border-radius: 10rem;
+    size: 100px;
+    width: 8rem;
+    height: 3rem;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0.5rem;
+    box-shadow: 5px 5px 30px #12141f67;
+    font-family: 'Roboto', sans-serif;
+    margin-left: 16rem;
+    margin-top: 1rem;
+}

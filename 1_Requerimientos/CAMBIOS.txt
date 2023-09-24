@@ -1,0 +1,2 @@
+- Aca no es necesario cambiar los Mockups o el modelo de dominio, ya que como dice la teoria los requisitos viven cambiando, entonces la aproximacion inicial no suele parecerse al producto final.
+- Si cambie todos los casos de uso, los adapte a la apgina web. Agregar mas casos de uso si se ve necesario.

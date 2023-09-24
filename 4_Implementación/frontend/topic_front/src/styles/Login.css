@@ -1,0 +1,57 @@
+#login-row {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+#login-text {
+    color: azure;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+}
+
+#login-text-2 {
+    color: azure;
+    font-size: 15px;
+    font-family: 'Roboto', sans-serif;
+    align-content: center;
+    justify-content: center;
+    padding-left: 5.5rem;
+}
+
+#login-title {
+    display: flex;
+    color: azure;
+    font-size: 40px;
+    font-family: 'Roboto', sans-serif;
+    justify-content: center;
+    align-content: center;
+}
+
+#form {
+    background-color: #323844;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 5px 5px 30px #12141fa1;
+    width: 32rem;
+}
+
+#form-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#login-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32rem;
+}
+
+#button-group {
+    margin-left: 10rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}

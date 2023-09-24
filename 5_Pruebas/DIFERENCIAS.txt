@@ -1,0 +1,2 @@
+- Yo escribi todo el plan de pruebas en un documento, y no en documentos separados.
+- Ser especifico en los casos de prueba, hay que simular que se los vamos a dar a alguien que no tiene idea de como funciona el sistema. Hacer la mayor cantidad de pruebas para la mayor cantidad de casos posibles, no agrupar.

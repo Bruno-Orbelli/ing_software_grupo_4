@@ -1,0 +1,46 @@
+#Topic {
+    font-size: 2rem;
+    font-family: 'Roboto Mono', monospace;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+#Topic:hover {
+    font-size: 2rem;
+    font-family: 'Roboto Mono', monospace;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    color: #e8d3ff;
+}
+
+#Nav {
+    background-color: #1a1a1a;
+    font-size: 1.5rem;
+    font-family: 'Roboto Mono', monospace;
+    height: 6rem;
+}
+
+#login-link {
+    font-size: 20px;
+    padding: 15px;
+    color: #9ca7a7;
+    margin-top: 1px;
+}
+
+#login-link:hover {
+    color: azure;
+    background-color: #1a1a1a00;
+}
+
+#account-link {
+    font-size: 20px;
+    padding: 15px;
+    color: #9ca7a7;
+    text-decoration: none;
+}
+
+#account-link:hover {
+    color: azure;
+    background-color: #1a1a1a00;
+    border-color: #1a1a1a00;
+}
