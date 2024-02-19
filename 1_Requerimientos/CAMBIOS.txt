@@ -1,2 +1,4 @@
 - Aca no es necesario cambiar los Mockups o el modelo de dominio, ya que como dice la teoria los requisitos viven cambiando, entonces la aproximacion inicial no suele parecerse al producto final.
 - Si cambie todos los casos de uso, los adapte a la apgina web. Agregar mas casos de uso si se ve necesario.
+### UPDATE BRUNO 19/02: 
+- Modifiqué unas cosas de las descripciones de los casos de uso que me agarré (los que salen en el Notion). Pusheé el docx y el pdf con los cambios.
