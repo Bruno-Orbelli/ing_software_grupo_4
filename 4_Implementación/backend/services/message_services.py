@@ -1,5 +1,5 @@
-from flask import request
-from flask_jwt_extended import jwt_required, get_jwt_identity, jwt_required
+from flask import request, abort
+from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from models.messages import Message
 from utils.utils import db
@@ -12,6 +12,7 @@ message_model = Message.getModel(messages)
 @messages.route('/messages')
 class MessagesResources(Resource):
     @messages.marshal_list_with(message_model)
+    @jwt_required()
     def get(self):
         '''
         Method to list all messages. GET request. This receive in body:
@@ -26,9 +27,7 @@ class MessagesResources(Resource):
             else:
                 return messages, 200
         except Exception as e:
-            if not messages:
-                return messages.abort(404, 'No messages found')
-            return messages.abort(500, f'Error getting messages: {e}')
+            return abort(500, f'Error getting messages: {e}')
         
     @messages.marshal_with(message_model)   
     @jwt_required()
@@ -42,10 +41,7 @@ class MessagesResources(Resource):
 
             title = request_data['title']
             content = request_data['content']
-            email = get_jwt_identity()
-
-            # Get user id from database
-            user_id = User.query.filter_by(email=email).first().id
+            user_id = get_jwt().get('user_id')
 
             # Add message to database
             new_message = Message(
@@ -60,13 +56,15 @@ class MessagesResources(Resource):
             # Return success message
             return new_message, 201
         except Exception as e:
-            # Return error message
-            return messages.abort(500, f'Error saving message: {e}')
+            # Rollback and return error message
+            db.session.rollback()
+            return abort(500, f'Error saving message: {e}')
 
 @messages.route('/message/<id>')
 class MessageResources(Resource):
 
     @messages.marshal_with(message_model)
+    @jwt_required()
     def get(self, id):
         '''
         Method to get a message by id. GET request.
@@ -76,51 +74,38 @@ class MessageResources(Resource):
             if message:
                 return message, 200
             else:
-                return messages.abort(404, 'Message does not exist')
+                return abort(404, 'Message does not exist')
         except Exception as e:
-            if not message:
-                return messages.abort(404, 'Message does not exist')
-            return messages.abort(500, f'Error getting message: {e}')
+            return abort(500, f'Error getting message: {e}')
         
     @messages.marshal_with(message_model)
     @jwt_required()
     def put(self, id):
         '''
         Method to update a message by id. PUT request.
+        Users can only update messages they are authors of, unless they are admin.
         '''
         try:
             message = Message.query.get(id)
+            # Check if message exists
+            if not message:
+                return abort(404, 'Message does not exist')
+            
+            # Check if user is the author of the message or is admin
+            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('admin')):
+                return abort(403, 'You are not allowed to modify this resource.')
+            
             request_data = request.get_json()
 
-            # Check if user exists
-            if not message:
-                return messages.abort(404, 'Message does not exist')
-
-            try:
-                title = request_data['title']
-            except KeyError:
-                title = None
-            try:
-                content = request_data['content']
-            except KeyError:
-                content = None
-
-            if not title:
-                title = message.title
-                print(title)
-            if not content:
-                content = message.content
-
-            message.title = title
-            message.content = content
+            for key, value in request_data.items():
+                setattr(message, key, value) if key in ("title", "content") and value else None
 
             db.session.commit()
-
             return message, 200
+        
         except Exception as e:
-            if not message:
-                return messages.abort(404, 'Message does not exist')
-            return messages.abort(500, f'Error updating message: {e}')
+            db.session.rollback()
+            return abort(500, f'Error updating message: {e}')
         
     @jwt_required()
     def delete(self, id):
@@ -133,12 +118,14 @@ class MessageResources(Resource):
             # Check if user exists
             if not message:
                 return messages.abort(404, 'Message does not exist')
+            
+            # Check if user is the author of the message or is admin
+            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('admin')):
+                return abort(403, 'You are not allowed to modify this resource.')
 
             db.session.delete(message)
             db.session.commit()
 
-            return {'message': f'Message {message.title} deleted'}, 200
+            return {'message': f'Message {message.title} deleted'}, 204
         except Exception as e:
-            if not message:
-                return messages.abort(404, 'Message does not exist')
-            return messages.abort(500, f'Error deleting message: {e}')
+            return abort(500, f'Error deleting message: {e}')

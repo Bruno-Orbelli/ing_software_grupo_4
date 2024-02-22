@@ -6,8 +6,8 @@ class Message(db.Model):
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.String(500), nullable=False)
     likes = db.Column(db.Integer, default=0)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user_data = db.relationship('User', backref='userData')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref='userData')
     create_at = db.Column(db.DateTime, server_default=db.func.now(), default=db.func.now())
 
     def getModel(messages):

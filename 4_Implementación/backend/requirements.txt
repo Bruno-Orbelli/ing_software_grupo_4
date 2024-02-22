@@ -9,3 +9,5 @@ werkzeug
 flask-mail
 mysqlclient
 marshmallow-sqlalchemy
+flask_cors
+flask_marshmallow

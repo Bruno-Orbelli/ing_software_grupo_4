@@ -1,6 +1,7 @@
 from utils.utils import db, ma
-from marshmallow import fields
+from marshmallow import fields, Schema
 from models.messages import Message
+from models.followships import Followship
 from flask_restx import fields
 
 class User(db.Model):
@@ -10,7 +11,21 @@ class User(db.Model):
     uname = db.Column(db.String(150), unique=True)
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(150))
-    messages = db.relationship('Message', backref='user', lazy=True) # This is to get the messages of the user
+    messages = db.relationship('Message', backref='user', lazy=True, cascade="all, delete-orphan") # This is to get the messages of the user
+    followers = db.relationship('User', 
+                                secondary=Followship.__table__.name, 
+                                primaryjoin=id == Followship.__table__.c.followed_id,
+                                secondaryjoin=id == Followship.__table__.c.follower_id,
+                                back_populates='following',
+                                cascade="all, delete"
+                                ) # This is to get the followers of the user
+    following = db.relationship('User',
+                                secondary=Followship.__table__.name,
+                                primaryjoin=id == Followship.__table__.c.follower_id,
+                                secondaryjoin=id == Followship.__table__.c.followed_id,
+                                back_populates='followers',
+                                cascade="all, delete"
+                                ) # This is to get the users followed by the original user
     admin = db.Column(db.Boolean, default=False)
 
     def getModel(users):
@@ -23,10 +38,9 @@ class User(db.Model):
             'uname': fields.String(description='User username'),
             'email': fields.String(description='User email'),
             'password': fields.String(description='User password'),
-            'messages': fields.List(fields.Nested(message_model),description='User messages'),
+            'messages': fields.List(fields.Nested(message_model), description='User messages'),
             'admin': fields.Boolean(description='User admin status')
         })
-
         return user_model
 
     def __repr__(self):
