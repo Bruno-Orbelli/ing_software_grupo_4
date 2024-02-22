@@ -1,3 +1,5 @@
 - Estaban todos los diagramas medio como el tuje
 - El diagrama de estados nos lo sacamos del poto porque no va
 - Los diagramas de secuencia tienen que representar tal cual los metodos y clases de la implementacion, tienen que ser exactamente iguales.
+## UPDATE BRUNO 21/02
+- Cambié los diagramas de clases de diseño y de subsistemas para que reflejaran las cosas que agregué e hice mis diagramas de secuencia.
