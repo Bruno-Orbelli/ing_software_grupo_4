@@ -9,9 +9,9 @@ class Followship(db.Model):
     def getModel(followships):
         followship_model = followships.model(
         "Followship", {
-            'id': fields.Integer(description='Followship id'),
-            'follower_id': fields.Integer(description='Follower user\'s id'),
-            'followed_id': fields.Integer(description='Followed user\'s id')
+            'id': fields.Integer(description='Followship id', skip_none=True),
+            'follower_id': fields.Integer(description='Follower user\'s id', skip_none=True),
+            'followed_id': fields.Integer(description='Followed user\'s id', skip_none=True)
         })
             
         return followship_model

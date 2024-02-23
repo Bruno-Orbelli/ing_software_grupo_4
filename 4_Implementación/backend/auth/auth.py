@@ -1,7 +1,7 @@
 from datetime import timedelta
 from flask import jsonify, request, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from models.users import User
 from flask_restx import Namespace, Resource
 from utils.utils import db, ma, jwt, cors
@@ -26,16 +26,16 @@ class RegisterUser(Resource):
             db_uname = User.query.filter_by(uname=user_uname).first()
 
             if db_mail:
-                return {'message': f'Email {user_mail} already exists'}, 400
+                return {'message': f'Email {user_mail} already exists.'}, 400
             if db_uname:
-                return {'message': f'Username {user_uname} already exists'}, 400
+                return {'message': f'Username {user_uname} already exists.'}, 400
 
             new_user = User(
                 fname=request_data['fname'],
                 lname=request_data['lname'],
                 uname=request_data['uname'],
                 email=request_data['email'],
-                password=generate_password_hash(request_data['password1'], method='sha256')
+                password=generate_password_hash(request_data['password1'], method='pbkdf2')
             )
 
             # Add user to database
@@ -45,9 +45,10 @@ class RegisterUser(Resource):
 
             # Rerturn success message
             #return user_schema.jsonify(new_user), 201
-            return {'message': f'User {new_user.uname} created successfully'}, 201
+            return {'message': f'User {new_user.uname} created successfully.'}, 201
         except Exception as e:
-            return {'message': f'Error creating user: {e}'}, 500
+            db.session.rollback()
+            return {'message': f'Error creating user: \'{type(e)}: {e}\'.'}, 500
 
 @auth.route('/login')
 class LoginUser(Resource):
@@ -74,16 +75,16 @@ class LoginUser(Resource):
                     refresh_token = create_refresh_token(identity=db_user.email, expires_delta=timedelta(minutes=30))
 
                     return {
-                        'message': f'User {db_user.uname} logged in successfully',
+                        'message': f'User {db_user.uname} logged in successfully.',
                         'access_token': access_token,
                         'refresh_token': refresh_token
                     }, 200
                 else:
-                    return {'message':'Password is incorrect'}, 401
+                    return {'message':'Password is incorrect.'}, 401
             else:
-                return {'message':'User does not exist'}, 404
+                return {'message':'User does not exist.'}, 404
         except Exception as e:
-            return {'message': f'Error login user: {e}'}, 500
+            return {'message': f'Error login user: \'{type(e)}: {e}\'.'}, 500
     
 @auth.route('/refresh')
 class RefreshToken(Resource):
@@ -101,4 +102,4 @@ class RefreshToken(Resource):
 
             return {'access_token': access_token}, 200
         except Exception as e:
-            return {'message': f'Error refreshing token: {e}'}, 500
+            return {'message': f'Error refreshing token: \'{type(e)}: {e}\'.'}, 500

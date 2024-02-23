@@ -1,6 +1,7 @@
 from flask import request, abort
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
+from werkzeug.exceptions import NotFound, Forbidden, BadRequest
 
 from models.followships import Followship
 from utils.utils import db
@@ -13,6 +14,7 @@ followship_model = Followship.getModel(followships)
 @followships.route('/followships')
 class FollowshipsResource(Resource):
     
+    @followships.marshal_with(followship_model, skip_none=True)
     @jwt_required()
     def get(self):
         '''
@@ -23,20 +25,25 @@ class FollowshipsResource(Resource):
         '''
         try:
             followships = Followship.query
-            if not get_jwt().get('admin'):
-                followships.get(follower_id=get_jwt().get('user_id'))  # Get user's followships from id
+            if not get_jwt().get('role'):
+                followships = followships.filter_by(follower_id=get_jwt().get('user_id'))  # Get user's followships from id
             else:
                 # If admin, allow for filtering
                 for key in request.args:
-                    followships.filter(getattr(Followship, key) == request.args[key]) if key in ("follower_id", "followed_id") else None
+                    if key == 'follower_id':
+                        followships = followships.filter(Followship.follower_id == int(request.args[key]))
+                        print(request.args[key])
+                    elif key == 'followed_id':
+                        followships = followships.filter(Followship.followed_id == int(request.args[key]))
+            
             if not followships.all():
-                return abort(404, 'No followships found.')
+                return {}, 200
             else:
                 return followships.all(), 200
         except Exception as e:
-            return abort(500, f'Error getting followships: {e}.')
+            return abort(500, f'Error getting followships: \'{type(e)}: {e}\'.')
         
-    @followships.marshal_with(followship_model)
+    @followships.marshal_with(followship_model, skip_none=True)
     @jwt_required()   
     def post(self):
         '''
@@ -48,6 +55,9 @@ class FollowshipsResource(Resource):
 
             follower_id = get_jwt().get('user_id')
             followed_id = request_data['followed_id']
+
+            if followed_id == follower_id:
+                return abort(400, 'You cannot follow yourself.')
 
             # Add followship to database
             new_followship = Followship( 
@@ -63,12 +73,14 @@ class FollowshipsResource(Resource):
         except Exception as e:
             # Return error message
             db.session.rollback()
-            return abort(500, f'Error following user: {e}')
+            if isinstance(e, BadRequest):
+                raise e
+            return abort(500, f'Error following user: \'{type(e)}: {e}\'.')
 
 @followships.route('/followship/<id>')
 class FollowshipsResource(Resource):
 
-    @followships.marshal_with(followship_model)
+    @followships.marshal_with(followship_model, skip_none=True)
     @jwt_required()
     def get(self, id):
         '''
@@ -82,12 +94,14 @@ class FollowshipsResource(Resource):
                 return abort(404, 'Followship does not exist.')
             
             # Check if user is part of followship or is admin
-            if user_id not in (followship.follower_id, followship.followed_id) and not get_jwt().get('admin'):
+            if user_id not in (followship.follower_id, followship.followed_id) and not get_jwt().get('role'):
                 return abort(403, 'You are not allowed to access this resource.')
             else:
                 return followship, 200
         except Exception as e:
-            return abort(500, f'Error getting followship: {e}')
+            if isinstance(e, (NotFound, Forbidden)):
+                raise e
+            return abort(500, f'Error getting followship: \'{type(e)}: {e}\'.')
         
     @jwt_required()
     def delete(self, id):
@@ -100,15 +114,18 @@ class FollowshipsResource(Resource):
 
             # Check if followship exists
             if not followship:
-                return abort(404, 'Followship does not exist')
+                return abort(404, 'Followship does not exist.')
             
             # Check if user is part of followship or is admin
-            if user_id not in (followship.follower_id, followship.followed_id) and not get_jwt().get('admin'):
+            if user_id not in (followship.follower_id, followship.followed_id) and not get_jwt().get('role'):
                 return abort(403, 'You are not allowed to delete this resource.')
             else:
                 db.session.delete(followship)
                 db.session.commit()
-                return {'message': f'Followship successfully deleted'}, 204
+                return {'message': f'Followship successfully deleted.'}, 204
         
         except Exception as e:
-            return abort(500, f'Error deleting followship: {e}')
+            db.session.rollback()
+            if isinstance(e, (NotFound, Forbidden)):
+                raise e
+            return abort(500, f'Error deleting followship: \'{type(e)}: {e}\'.')

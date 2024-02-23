@@ -1,4 +1,5 @@
 from flask import request, abort
+from werkzeug.exceptions import NotFound, Forbidden
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from models.messages import Message
@@ -11,25 +12,34 @@ message_model = Message.getModel(messages)
 
 @messages.route('/messages')
 class MessagesResources(Resource):
-    @messages.marshal_list_with(message_model)
+    @messages.marshal_list_with(message_model, skip_none=True)
     @jwt_required()
     def get(self):
         '''
-        Method to list all messages. GET request. This receive in body:
-        - title: string
-        - content: string
+        Method to list all messages. GET request.
+
         '''
         try:
-            messages = Message.query.all()
+            messages = Message.query
             # Get username from user_id
             if not messages:
-                return messages.abort(404, 'No messages found')
-            else:
-                return messages, 200
+                return {}, 200
+            
+            # Get parameters from request to filter
+            for key in request.args:
+                if key == 'title':
+                    print(f'%{request.args[key]}%')
+                    messages = messages.filter(Message.title.like(f'%{request.args[key]}%'))
+                elif key == 'content':
+                    messages = messages.filter(Message.content.like(f'%{request.args[key]}%'))
+                elif key == 'user_id':
+                    messages = messages.filter(Message.user_id == int(request.args[key]))
+            
+            return messages.all(), 200
         except Exception as e:
-            return abort(500, f'Error getting messages: {e}')
+            return abort(500, f'Error getting messages: \'{type(e)}: {e}\'.')
         
-    @messages.marshal_with(message_model)   
+    @messages.marshal_with(message_model, skip_none=True)   
     @jwt_required()
     def post(self):
         '''
@@ -58,12 +68,12 @@ class MessagesResources(Resource):
         except Exception as e:
             # Rollback and return error message
             db.session.rollback()
-            return abort(500, f'Error saving message: {e}')
+            return abort(500, f'Error saving message: \'{type(e)}: {e}\'.')
 
 @messages.route('/message/<id>')
 class MessageResources(Resource):
 
-    @messages.marshal_with(message_model)
+    @messages.marshal_with(message_model, skip_none=True)
     @jwt_required()
     def get(self, id):
         '''
@@ -74,11 +84,13 @@ class MessageResources(Resource):
             if message:
                 return message, 200
             else:
-                return abort(404, 'Message does not exist')
+                return abort(404, 'Message does not exist.')
         except Exception as e:
-            return abort(500, f'Error getting message: {e}')
+            if isinstance(e, NotFound):
+                raise e
+            return abort(500, f'Error getting message: \'{type(e)}: {e}\'.')
         
-    @messages.marshal_with(message_model)
+    @messages.marshal_with(message_model, skip_none=True)
     @jwt_required()
     def put(self, id):
         '''
@@ -89,14 +101,15 @@ class MessageResources(Resource):
             message = Message.query.get(id)
             # Check if message exists
             if not message:
-                return abort(404, 'Message does not exist')
+                return abort(404, 'Message does not exist.')
             
             # Check if user is the author of the message or is admin
-            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('admin')):
+            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('role')):
                 return abort(403, 'You are not allowed to modify this resource.')
             
             request_data = request.get_json()
 
+            # Update message
             for key, value in request_data.items():
                 setattr(message, key, value) if key in ("title", "content") and value else None
 
@@ -105,7 +118,9 @@ class MessageResources(Resource):
         
         except Exception as e:
             db.session.rollback()
-            return abort(500, f'Error updating message: {e}')
+            if isinstance(e, (NotFound, Forbidden)):
+                raise e
+            return abort(500, f'Error updating message: \'{type(e)}: {e}\'.')
         
     @jwt_required()
     def delete(self, id):
@@ -117,15 +132,18 @@ class MessageResources(Resource):
 
             # Check if user exists
             if not message:
-                return messages.abort(404, 'Message does not exist')
+                return abort(404, 'Message does not exist.')
             
             # Check if user is the author of the message or is admin
-            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('admin')):
-                return abort(403, 'You are not allowed to modify this resource.')
-
+            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('role')):
+                return abort(403, 'You are not allowed to delete this resource.')
+            
             db.session.delete(message)
             db.session.commit()
 
-            return {'message': f'Message {message.title} deleted'}, 204
+            return {'message': f'Message {message.title} deleted.'}, 204
         except Exception as e:
-            return abort(500, f'Error deleting message: {e}')
+            db.session.rollback()
+            if isinstance(e, (NotFound, Forbidden)):
+                raise e
+            return abort(500, f'Error deleting message: \'{type(e)}: {e}\'.')

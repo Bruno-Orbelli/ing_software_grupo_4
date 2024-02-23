@@ -32,14 +32,13 @@ class User(db.Model):
         message_model = Message.getModel(users)
         user_model = users.model(
         "User", {
-            'id': fields.Integer(description='User id'),
-            'fname': fields.String(description='User first name'),
-            'lname': fields.String(description='User last name'),
-            'uname': fields.String(description='User username'),
-            'email': fields.String(description='User email'),
-            'password': fields.String(description='User password'),
-            'messages': fields.List(fields.Nested(message_model), description='User messages'),
-            'admin': fields.Boolean(description='User admin status')
+            'id': fields.Integer(description='User id', skip_none=True),
+            'fname': fields.String(description='User first name', skip_none=True),
+            'lname': fields.String(description='User last name', skip_none=True),
+            'uname': fields.String(description='User username', skip_none=True),
+            'email': fields.String(description='User email', skip_none=True),
+            'messages': fields.List(fields.Nested(message_model), description='User messages', skip_none=True),
+            'admin': fields.Boolean(description='User admin status', skip_none=True)
         })
         return user_model
 
