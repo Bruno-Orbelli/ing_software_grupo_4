@@ -98,8 +98,26 @@ class RefreshToken(Resource):
             current_user = get_jwt_identity()
 
             # Create the access token
-            access_token = create_access_token(identity=current_user, expires_delta=timedelta(minutes=30))
+            access_token = create_access_token(identity=current_user, additional_claims={'recovery': True}, expires_delta=timedelta(minutes=30))
 
             return {'access_token': access_token}, 200
         except Exception as e:
             return {'message': f'Error refreshing token: \'{type(e)}: {e}\'.'}, 500
+
+@auth.route('/recovery')
+class RecoveryToken(Resource):
+    @jwt_required()
+    def get(self):
+        '''
+        Method to generate a recovery token for password changing. GET request.
+        '''
+        try:
+            # Get the identity of the current user from the access token
+            current_user = get_jwt_identity()
+
+            # Create the recovery token
+            recovery_token = create_access_token(identity=current_user,  expires_delta=timedelta(minutes=10))
+
+            return {'recovery_token': recovery_token}, 200
+        except Exception as e:
+            return {'message': f'Error generating recovery token: \'{type(e)}: {e}\'.'}, 500

@@ -24,8 +24,10 @@ class MailTemplateResources(Resource):
         - template: string
         '''
         try:
-            if not get_jwt().get('role'):
+            # Check if token is not recovery and user is admin
+            if not (get_jwt().get('recovery') != True and get_jwt().get('role')):
                 return abort(403, "You are not allowed to access this resource.")
+            
             mail_templates = MailTemplate.query
             # Get parameters from request to filter
             for key in request.args:
@@ -55,7 +57,8 @@ class MessageResources(Resource):
         Method to get a mail templtate by id. GET request.
         '''
         try:
-            if not get_jwt().get('role'):
+            # Check if token is not recovery and user is admin
+            if not (get_jwt().get('recovery') != True and get_jwt().get('role')):
                 return abort(403, "You are not allowed to access this resource.")
             mail_template = MailTemplate.query.get(id)
             if not mail_template:

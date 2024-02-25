@@ -17,9 +17,16 @@ class MessagesResources(Resource):
     def get(self):
         '''
         Method to list all messages. GET request.
-
+        Filter by:
+        - title: string
+        - content: string
+        - user_id: int
         '''
         try:
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to access this resource.')
+            
             messages = Message.query
             # Get username from user_id
             if not messages:
@@ -46,7 +53,11 @@ class MessagesResources(Resource):
         Method to add a new message. POST request.
         '''
         try:
-            ## Get data from request
+             # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to create this resource.')
+            
+            # Get data from request
             request_data = request.get_json()
 
             title = request_data['title']
@@ -80,6 +91,10 @@ class MessageResources(Resource):
         Method to get a message by id. GET request.
         '''
         try:
+             # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to access this resource.')
+            
             message = Message.query.get(id)
             if message:
                 return message, 200
@@ -98,6 +113,9 @@ class MessageResources(Resource):
         Users can only update messages they are authors of, unless they are admin.
         '''
         try:
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to modify this resource.')
             message = Message.query.get(id)
             # Check if message exists
             if not message:
@@ -130,6 +148,10 @@ class MessageResources(Resource):
         try:
             message = Message.query.get(id)
 
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to delete this resource.')
+            
             # Check if user exists
             if not message:
                 return abort(404, 'Message does not exist.')

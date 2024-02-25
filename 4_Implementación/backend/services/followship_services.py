@@ -24,6 +24,10 @@ class FollowshipsResource(Resource):
         - followed_id: integer
         '''
         try:
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to access this resource.')
+            
             followships = Followship.query
             if not get_jwt().get('role'):
                 followships = followships.filter_by(follower_id=get_jwt().get('user_id'))  # Get user's followships from id
@@ -50,6 +54,10 @@ class FollowshipsResource(Resource):
         Method to add a new followship. POST request.
         '''
         try:
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to create this resource.')
+            
             # Get data from request
             request_data = request.get_json()
 
@@ -90,6 +98,11 @@ class FollowshipsResource(Resource):
         try:
             user_id = get_jwt().get('user_id')
             followship = Followship.query.get(id)
+            
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to access this resource.')
+            
             if not followship:
                 return abort(404, 'Followship does not exist.')
             
@@ -112,12 +125,16 @@ class FollowshipsResource(Resource):
             user_id = get_jwt().get('user_id')
             followship = Followship.query.get(id)
 
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to delete this resource.')
+            
             # Check if followship exists
             if not followship:
                 return abort(404, 'Followship does not exist.')
             
             # Check if user is part of followship or is admin
-            if user_id not in (followship.follower_id, followship.followed_id) and not get_jwt().get('role'):
+            if not(user_id in (followship.follower_id, followship.followed_id) or get_jwt().get('role')):
                 return abort(403, 'You are not allowed to delete this resource.')
             else:
                 db.session.delete(followship)
