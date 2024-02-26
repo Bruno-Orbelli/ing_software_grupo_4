@@ -3,7 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from werkzeug.exceptions import NotFound, Forbidden
 from models.mailtemplates import MailTemplate
-from utils.utils import db
+from utils.utils import mail
+from flask_mail import Message
 from models.users import User
 
 mail_templates = Namespace('mailtemplates', description='MailTemplates endpoints namespace')
@@ -11,7 +12,7 @@ mail_templates = Namespace('mailtemplates', description='MailTemplates endpoints
 mail_model = MailTemplate.getModel(mail_templates)
 
 @mail_templates.route('/mailtemplates')
-class MailTemplateResources(Resource):
+class MailTemplatesResources(Resource):
     
     @mail_templates.marshal_list_with(mail_model, skip_none=True)
     @jwt_required()
@@ -48,7 +49,7 @@ class MailTemplateResources(Resource):
             return abort(500, f'Error getting mail templates: \'{type(e)}: {e}\'.')
 
 @mail_templates.route('/mailtemplate/<id>')
-class MessageResources(Resource):
+class MailTemplateResources(Resource):
     
     @mail_templates.marshal_with(mail_model, skip_none=True)
     @jwt_required()
@@ -69,3 +70,30 @@ class MessageResources(Resource):
             if isinstance(e, (NotFound, Forbidden)):
                 raise e
             return abort(500, f'Error getting mail templates: \'{type(e)}: {e}\'.')
+
+class MailService:
+    @staticmethod
+    def send_mail(to: str, template_id: int, **kwargs):
+        '''
+        Method to send a mail.
+        '''
+        try:
+            # Get mail template
+            mail_template = MailTemplate.query.get(template_id)
+            if not mail_template:
+                return abort(404, f'Mail template does not exist.')
+            
+            # Get user from email
+            user = User.query.filter_by(email=to).first()
+            if not user:
+                return abort(404, f'User with specified email does not exist.')
+            
+            # Format mail template
+            mail = mail_template.template.format(**kwargs)
+            message = Message(mail, recipients=[to], subject=mail_template.subject)
+            
+            # Send mail
+            mail.send_message(message)
+            return {'message': f'Mail sent to {to}.'}, 200
+        except Exception as e:
+            return abort(500, f'Error sending mail: \'{type(e)}: {e}\'.')

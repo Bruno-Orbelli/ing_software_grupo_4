@@ -1,10 +1,12 @@
 from datetime import timedelta
 from flask import jsonify, request, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
+from jwt.exceptions import InvalidSignatureError
 from models.users import User
 from flask_restx import Namespace, Resource
 from utils.utils import db, ma, jwt, cors
+from services.mail_services import MailService
 
 auth = Namespace('auth', description='Authentication endpoints namespace')
 
@@ -48,6 +50,8 @@ class RegisterUser(Resource):
             return {'message': f'User {new_user.uname} created successfully.'}, 201
         except Exception as e:
             db.session.rollback()
+            if isinstance(e, KeyError):
+                return {'message': 'Invalid request body.'}, 400
             return {'message': f'Error creating user: \'{type(e)}: {e}\'.'}, 500
 
 @auth.route('/login')
@@ -57,7 +61,7 @@ class LoginUser(Resource):
         Method to login a user. POST request.
         '''
         try:
-            ## Get data from request
+            # Get data from request
             request_data = request.get_json()
 
             email = request_data['email']
@@ -84,6 +88,8 @@ class LoginUser(Resource):
             else:
                 return {'message':'User does not exist.'}, 404
         except Exception as e:
+            if isinstance(e, KeyError):
+                return {'message': 'Invalid request body.'}, 400
             return {'message': f'Error login user: \'{type(e)}: {e}\'.'}, 500
     
 @auth.route('/refresh')
@@ -98,26 +104,66 @@ class RefreshToken(Resource):
             current_user = get_jwt_identity()
 
             # Create the access token
-            access_token = create_access_token(identity=current_user, additional_claims={'recovery': True}, expires_delta=timedelta(minutes=30))
+            access_token = create_access_token(identity=current_user, expires_delta=timedelta(minutes=30))
 
             return {'access_token': access_token}, 200
         except Exception as e:
+            if isinstance(e, KeyError):
+                return {'message': 'Invalid request body.'}, 400
             return {'message': f'Error refreshing token: \'{type(e)}: {e}\'.'}, 500
 
-@auth.route('/recovery')
-class RecoveryToken(Resource):
-    @jwt_required()
-    def get(self):
+@auth.route('/recovery/send_token')
+class SendRecoveryToken(Resource):
+    def post(self):
         '''
-        Method to generate a recovery token for password changing. GET request.
+        Method to generate a recovery token for password changing and send it via email. POST request.
         '''
         try:
-            # Get the identity of the current user from the access token
-            current_user = get_jwt_identity()
+            # Get token from request
+            request_data = request.get_json()
+            token = request_data['requesting_token']
+            
+            # Get the identity of the sollicitor from the recovery token
+            email = decode_token(token)['sub']
+            user_id = decode_token(token)['user_id']
+
+            # Check if identity is valid
+            user = User.query.get(user_id)
+            if not user:
+                return {'message': 'User does not exist.'}, 404
+            if user.email != email:
+                return {'message': 'Invalid recovery token.'}, 400
 
             # Create the recovery token
-            recovery_token = create_access_token(identity=current_user,  expires_delta=timedelta(minutes=10))
+            recovery_token = create_access_token(identity=email, 
+                                                 additional_claims={'recovery': True}, 
+                                                 expires_delta=timedelta(minutes=10))
+            
+            # Send recovery mail
+            MailService.send_mail(email, 1, uname=user.uname, recovery_token=recovery_token)
 
-            return {'recovery_token': recovery_token}, 200
+            return {'message': 'Recovery mail sent correctly.'}, 200
         except Exception as e:
-            return {'message': f'Error generating recovery token: \'{type(e)}: {e}\'.'}, 500
+            if isinstance(e, KeyError):
+                return {'message': 'Invalid request body.'}, 400
+            elif isinstance(e, InvalidSignatureError):
+                return {'message': 'Invalid requesting token.'}, 400
+            return {'message': f'Error providing recovery token: \'{type(e)}: {e}\'.'}, 500
+
+@auth.route('/recovery/<token>')
+class CheckRecoveryToken(Resource):
+    def get(self, token):
+        '''
+        Method to check if recovery token is valid. GET request.
+        '''
+        try:
+            # Check if token is valid
+            jwt_content = decode_token(token)
+            print(jwt_content)
+            if not jwt_content['recovery']:
+                return {'is_valid': False}, 200
+
+            return {'is_valid': True}, 200
+        
+        except (InvalidSignatureError, KeyError):
+            return {'is_valid': False}, 200
