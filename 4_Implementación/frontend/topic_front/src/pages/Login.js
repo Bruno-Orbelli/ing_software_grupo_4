@@ -131,7 +131,7 @@ const Login = () => {
                             <Form.Group className='mt-2'>
                                 <small id="login-text-2">
                                     Forgot your password?
-                                    <Link id="create-account" className='m-2' to="#">
+                                    <Link id="create-account" className='m-2' to="/recovery/form">
                                         Reset password
                                     </Link>
                                 </small>

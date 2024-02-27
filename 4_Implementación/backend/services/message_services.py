@@ -4,7 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from models.messages import Message
 from utils.utils import db
-from models.users import User
 
 messages = Namespace('messages', description='Messages endpoints namespace')
 
@@ -35,7 +34,6 @@ class MessagesResources(Resource):
             # Get parameters from request to filter
             for key in request.args:
                 if key == 'title':
-                    print(f'%{request.args[key]}%')
                     messages = messages.filter(Message.title.like(f'%{request.args[key]}%'))
                 elif key == 'content':
                     messages = messages.filter(Message.content.like(f'%{request.args[key]}%'))

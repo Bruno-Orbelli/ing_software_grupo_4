@@ -4,7 +4,7 @@ from services.message_services import messages
 from auth.auth import auth
 from services.followship_services import followships
 from services.mail_services import mail_templates
-from utils.utils import db, ma, cors, jwt
+from utils.utils import db, ma, cors, jwt, mail
 from flask_restx import Api
 
 def create_app(config):
@@ -18,6 +18,7 @@ def create_app(config):
     ma.init_app(app) # Initialize Marshmallow
     cors.init_app(app) # Initialize CORS
     jwt.init_app(app) # Initialize JWT
+    mail.init_app(app) # Initialize Mail
     api = Api(app, doc='/docs')
 
     # Register namespaces

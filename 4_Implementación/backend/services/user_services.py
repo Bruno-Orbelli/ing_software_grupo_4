@@ -1,10 +1,10 @@
 from flask import request, abort
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.exceptions import NotFound, Forbidden, Conflict
+from werkzeug.exceptions import NotFound, Forbidden, Conflict, BadRequest
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from models.users import User
-from utils.utils import db, ma, jwt, cors
+from utils.utils import db, recovery_blist
 
 users = Namespace('users', description='Users endpoints namespace')
 
@@ -27,7 +27,6 @@ class UsersResource(Resource):
             users = User.query
             is_admin = get_jwt().get('role')
             allowed_filters = ('fname', 'lname', 'uname', 'email') if not is_admin else ('fname', 'lname', 'uname', 'email', 'admin')
-            print(allowed_filters)
             
             # Get parameters from request to filter
             for key in request.args:
@@ -82,13 +81,9 @@ class UserResources(Resource):
         '''
         Method to update a user by id. PUT request.
         '''
-        try:
-            # Check if token is not recovery
-            if get_jwt().get('recovery') == True:
-                return abort(403, 'You are not allowed to access this resource.')
-            
+        try:               
             user = User.query.get(id)
-            
+
             # Check if user exists
             if not user:
                 return abort(404, 'User does not exist.')
@@ -98,12 +93,22 @@ class UserResources(Resource):
                 return abort(403, 'You are not allowed to modify this resource.')
 
             request_data = request.get_json()
+
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True and not recovery_blist.is_blacklisted(get_jwt()):
+                new_pass = request_data['password']
+                if not new_pass:
+                    return abort(400, 'Invalid request: password is required.')
+                user.password = generate_password_hash(new_pass, method='pbkdf2') if not check_password_hash(user.password, new_pass) else user.password
+                db.session.commit()
+                recovery_blist.add(get_jwt())
+                return user, 200
             
             # Update user
             for key, value in request_data.items():
                 # Check if password is different
                 if key == "password":
-                    value = generate_password_hash(value, method='pbkdf2') if check_password_hash(user.password, value) else None
+                    value = generate_password_hash(value, method='pbkdf2') if not check_password_hash(user.password, value) else None
                 elif all((key == "uname", User.query.filter_by(uname=value).first(), value != user.uname)):
                     return abort(409, 'Username already exists.')
                 elif all((key == "email", User.query.filter_by(email=value).first(), value != user.email)):
@@ -115,8 +120,10 @@ class UserResources(Resource):
         
         except Exception as e:
             db.session.rollback()
-            if isinstance(e, (NotFound, Forbidden, Conflict)):
+            if isinstance(e, (NotFound, Forbidden, Conflict, BadRequest)):
                 raise e
+            if isinstance(e, KeyError):
+                return abort(400, 'Invalid request: KeyError.')
             return abort(500, f'Error updating user: \'{type(e)}: {e}\'.')
         
     @jwt_required()

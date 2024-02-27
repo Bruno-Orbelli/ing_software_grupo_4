@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import os
+import os, ssl
 
 class Config:
     '''
@@ -13,7 +13,7 @@ class Config:
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
     MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
 
-    SECRET_KEY=os.getenv('SECRET_KEY')
+    SECRET_KEY = os.getenv('SECRET_KEY')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PORT = os.getenv('PORT')
 
@@ -21,9 +21,10 @@ class Config:
     MAIL_PORT = os.getenv('MAIL_PORT')
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS')
-    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL')
+    MAIL_USE_TLS = int(os.getenv('MAIL_USE_TLS'))
+    MAIL_USE_SSL = int(os.getenv('MAIL_USE_SSL'))
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
+    MAIL_DEBUG = bool(os.getenv('MAIL_DEBUG'))
 
 class DevConfig(Config):
     '''
@@ -33,3 +34,4 @@ class DevConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = f'mysql://{Config.MYSQL_USER}:{Config.MYSQL_PASSWORD}@{Config.MYSQL_HOST}:3306/{Config.MYSQL_DATABASE}'
     SQLALCHEMY_ECHO = False
+    MAIL_SSL_VERSION = ssl.PROTOCOL_TLSv1_2

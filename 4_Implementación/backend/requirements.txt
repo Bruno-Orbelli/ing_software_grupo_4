@@ -11,5 +11,4 @@ mysqlclient
 marshmallow-sqlalchemy
 flask_cors
 flask_marshmallow
-jwt
 flask_mail

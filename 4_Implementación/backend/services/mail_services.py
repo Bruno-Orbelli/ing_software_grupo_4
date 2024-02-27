@@ -89,11 +89,11 @@ class MailService:
                 return abort(404, f'User with specified email does not exist.')
             
             # Format mail template
-            mail = mail_template.template.format(**kwargs)
-            message = Message(mail, recipients=[to], subject=mail_template.subject)
+            mail_body = mail_template.template.format(**kwargs)
+            message = Message(subject=mail_template.subject, recipients=[to], html=mail_body)
             
             # Send mail
-            mail.send_message(message)
+            mail.send(message)
             return {'message': f'Mail sent to {to}.'}, 200
         except Exception as e:
             return abort(500, f'Error sending mail: \'{type(e)}: {e}\'.')

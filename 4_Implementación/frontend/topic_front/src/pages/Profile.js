@@ -118,7 +118,14 @@ const LoggedInLinks = () => {
 
     useEffect(() => {
         /* eslint-disable react-hooks/exhaustive-deps */
-        fetch(`/users/user/${id}`)
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }
+        fetch(`/users/user/${id}`, requestOptions)
             .then(response => Promise.all([
                 response.json(),
                 response.status
@@ -132,9 +139,6 @@ const LoggedInLinks = () => {
                     setMessages(user.messages.sort(CompareByDate))
                     //userRef.current = user
                 }
-                else {
-                    console.log(user)
-                }
             })
     }, []
     );
@@ -143,8 +147,10 @@ const LoggedInLinks = () => {
         <>
             <div id="tab-row-profile" className='row'>
                 <ProfileCard
-                    fname={userData.fname}
-                    lname={userData.lname}
+                    fname={userData.fname.charAt(0).toUpperCase()
+                        + userData.fname.slice(1)}
+                    lname={userData.lname.charAt(0).toUpperCase()
+                        + userData.lname.slice(1)}
                     uname={userData.uname}
                     email={userData.email}
                     role={userData.role}

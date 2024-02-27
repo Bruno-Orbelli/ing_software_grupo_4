@@ -1,11 +1,12 @@
 from datetime import timedelta
-from flask import jsonify, request, make_response
+from flask import request
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, decode_token
-from jwt.exceptions import InvalidSignatureError
+from jwt.exceptions import InvalidSignatureError, ExpiredSignatureError
 from models.users import User
 from flask_restx import Namespace, Resource
-from utils.utils import db, ma, jwt, cors
+from utils.utils import db, recovery_blist
 from services.mail_services import MailService
 
 auth = Namespace('auth', description='Authentication endpoints namespace')
@@ -43,7 +44,6 @@ class RegisterUser(Resource):
             # Add user to database
             db.session.add(new_user)
             db.session.commit()
-            print('User added to database')
 
             # Rerturn success message
             #return user_schema.jsonify(new_user), 201
@@ -123,12 +123,12 @@ class SendRecoveryToken(Resource):
             request_data = request.get_json()
             token = request_data['requesting_token']
             
-            # Get the identity of the sollicitor from the recovery token
+            # Get the identity of the solicitor from the recovery token
             email = decode_token(token)['sub']
-            user_id = decode_token(token)['user_id']
+            uname = decode_token(token)['uname']
 
             # Check if identity is valid
-            user = User.query.get(user_id)
+            user = User.query.filter_by(uname=uname).first()
             if not user:
                 return {'message': 'User does not exist.'}, 404
             if user.email != email:
@@ -136,18 +136,15 @@ class SendRecoveryToken(Resource):
 
             # Create the recovery token
             recovery_token = create_access_token(identity=email, 
-                                                 additional_claims={'recovery': True}, 
+                                                 additional_claims={'user_id': user.id, 'recovery': True}, 
                                                  expires_delta=timedelta(minutes=10))
             
             # Send recovery mail
             MailService.send_mail(email, 1, uname=user.uname, recovery_token=recovery_token)
-
             return {'message': 'Recovery mail sent correctly.'}, 200
         except Exception as e:
-            if isinstance(e, KeyError):
-                return {'message': 'Invalid request body.'}, 400
-            elif isinstance(e, InvalidSignatureError):
-                return {'message': 'Invalid requesting token.'}, 400
+            if isinstance(e, (KeyError, InvalidSignatureError, ExpiredSignatureError, BadRequest)):
+                return {'message': 'Invalid request.'}, 400
             return {'message': f'Error providing recovery token: \'{type(e)}: {e}\'.'}, 500
 
 @auth.route('/recovery/<token>')
@@ -159,11 +156,16 @@ class CheckRecoveryToken(Resource):
         try:
             # Check if token is valid
             jwt_content = decode_token(token)
-            print(jwt_content)
             if not jwt_content['recovery']:
                 return {'is_valid': False}, 200
-
+        
+            # Check if token is blacklisted
+            if recovery_blist.is_blacklisted(jwt_content):
+                return {'is_valid': False}, 200
+            
             return {'is_valid': True}, 200
         
-        except (InvalidSignatureError, KeyError):
+        except (InvalidSignatureError, KeyError, ExpiredSignatureError, BadRequest) as e:
+            if isinstance(e, (KeyError, BadRequest)):
+                return 400, {'message': f'Invalid request: {e}'}
             return {'is_valid': False}, 200

@@ -9,6 +9,7 @@ import Navbar from './components/navbar';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
 import RecoverPassword from './pages/RecoverPassword';
+import RecoverPasswordNewPass from './pages/RecoverPasswordNewPass';
 
 import "./styles/message.css";
 import "./styles/Home.css";
@@ -21,6 +22,7 @@ import "./styles/ABM.css";
 import "./styles/Edit.css";
 import "./styles/notfound.css";
 import "./styles/RecoverPassword.css";
+import "./styles/RecoverPasswordNewPass.css";
 import "./App.css";
 
 function App() {
@@ -39,7 +41,8 @@ function App() {
             <Route path='/users/user/:id/edit' element={<EditUser />} />
             <Route path='/404' element={<NotFound />} />
             <Route path='*' element={<NotFound />} />
-            <Route path='/recovery' element={<RecoverPassword />} />
+            <Route path='/recovery/form' element={<RecoverPassword />} />
+            <Route path='/recovery/newpassword/:token' element={<RecoverPasswordNewPass />} />
           </Routes>
           </div>
         </BrowserRouter>
