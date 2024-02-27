@@ -32,6 +32,32 @@
     background-color: #1a1a1a00;
 }
 
+#search-link-button {
+    font-size: 20px;
+    padding: 15px;
+    color: #9ca7a7;
+    margin-top: 1px;
+    text-decoration: none;
+}
+
+#search-link-button:hover {
+    color: azure;
+    background-color: #1a1a1a00;
+    text-decoration: none;
+}
+
+#home-link {
+    font-size: 20px;
+    padding: 15px;
+    color: #9ca7a7;
+    margin-top: 1px;
+}
+
+#home-link:hover {
+    color: azure;
+    background-color: #1a1a1a00;
+}
+
 #account-link {
     font-size: 20px;
     padding: 15px;
@@ -43,4 +69,86 @@
     color: azure;
     background-color: #1a1a1a00;
     border-color: #1a1a1a00;
+}
+
+#close-search-button {
+    background-color: #464e5f00;
+    color: azure;
+    font-size: 1.35rem;
+    border: #12121200;
+    padding: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: 15rem;
+}
+
+#close-search-button:hover {
+    background-color: #464e5f00;
+    color: rgb(194, 207, 207);
+    font-size: 1.35rem;
+    border: #12121200;
+    padding: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: 15rem;
+}
+
+#search-input {
+    width: 40rem;
+    background-color: #363a44;
+    border: #12121200;
+    color: azure;
+    margin-left: 1rem;
+}
+
+#search-input:focus {
+    width: 40rem;
+    background-color: #323844;
+    border: #12121200;
+    color: azure;
+    box-shadow:  0 0 .25rem rgba(255, 255, 255, 0.685);
+}
+
+#search-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#search-button {
+    background-color: #464e5f00;
+    color: azure;
+    font-size: 1.35rem;
+    border: #12121200;
+    padding: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: 1rem;
+}
+
+#search-button:hover {
+    background-color: #464e5f00;
+    color: rgb(194, 207, 207);
+    font-size: 1.35rem;
+    border: #12121200;
+    padding: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: 1rem;
+}
+
+#collapseUsersBody {
+    background-color: #363a44;
+    border: #1a1a1a00;
+    color: #9ca7a7;
+    color: azure;
+    font-family: 'Roboto Mono', monospace;
+    height: flex;
+    margin-left: 35rem;
+    margin-right: 34rem;
+}
+
+.form-control::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: azure!important;
+    opacity: 1!important; /* Firefox */
 }

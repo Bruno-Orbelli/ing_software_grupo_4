@@ -18,7 +18,21 @@ const ShowEditUser = () => {
     }, []);
 
     const getUser = () => {
-        fetch(`/users/user/${id}`)
+        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+    
+        const requestOptions = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${JSON.parse(token).access_token}`
+            }
+        }
+
+        if (id !== JSON.parse(atob(JSON.parse(token).access_token.split('.')[1])).user_id) {
+            navigate('/');
+        }
+        
+        fetch(`/users/user/${id}`, requestOptions)
             .then(response => Promise.all([
                 response.json(),
                 response.status
@@ -33,7 +47,8 @@ const ShowEditUser = () => {
                 else {
                     console.log(user)
                 }
-            })
+            }
+        )
     }
 
     const handleChange = (event) => {

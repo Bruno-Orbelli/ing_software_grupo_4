@@ -74,6 +74,7 @@ const NewMessage = async () => {
 const fireToastSuccess = (message) => {
   Swal.fire({
       title: "<h5 style='color:azure; font-size:1.3rem'>Message posted!</h5>",
+      text: message,
       color: 'azure',
       background: '#323844',
       icon: 'success',
@@ -112,7 +113,18 @@ const LoggedInLinks = () => {
 
   useEffect(() => {
     /* eslint-disable react-hooks/exhaustive-deps */
-    fetch('/messages/messages')
+    
+    const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+    
+    const requestOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${JSON.parse(token).access_token}`
+      }
+    }
+    
+    fetch('/messages/messages', requestOptions)
       .then(response => Promise.all([
         response.json(),
         response.status

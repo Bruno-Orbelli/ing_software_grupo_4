@@ -100,21 +100,16 @@ const fireToastError = (message) => {
 
 const LoggedInLinks = () => {
 
-    const [userData, setData] = useState([]); // Esto es un hook
-    const [messages, setMessages] = useState([]); // Esto es un hook
+    const [userData, setData] = useState(undefined); // Esto es un hook
+    const [messages, setMessages] = useState(undefined); // Esto es un hook
 
     // Get user data from token
-    const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
-    const id = JSON.parse(atob(token.split('.')[1])).user_id
+    const tokenJson = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+    const token = JSON.parse(tokenJson).access_token
+    const id = JSON.parse(atob(tokenJson.split('.')[1])).user_id
+
 
     //const userRef = useRef(undefined);
-
-    const CompareByDate = (a, b) => {
-        const dateA = new Date(a.create_at)
-        const dateB = new Date(b.create_at)
-
-        return dateB - dateA
-    }
 
     useEffect(() => {
         /* eslint-disable react-hooks/exhaustive-deps */
@@ -125,35 +120,44 @@ const LoggedInLinks = () => {
                 'Authorization': `Bearer ${token}`
             }
         }
+        console.log(id)
         fetch(`/users/user/${id}`, requestOptions)
             .then(response => Promise.all([
                 response.json(),
                 response.status
             ]))
             .then(data => {
+                console.log(data)
                 const user = data[0]
                 const status = data[1]
                 if (status === 200) {
-                    //console.log(user)
+                    console.log(user)
                     setData(user)
                     setMessages(user.messages.sort(CompareByDate))
                     //userRef.current = user
                 }
             })
-    }, []
+        }
     );
+
+    const CompareByDate = (a, b) => {
+        const dateA = new Date(a.create_at)
+        const dateB = new Date(b.create_at)
+
+        return dateB - dateA
+    }
 
     return (
         <>
             <div id="tab-row-profile" className='row'>
                 <ProfileCard
-                    fname={userData.fname.charAt(0).toUpperCase()
+                    fname={userData && userData.fname.charAt(0).toUpperCase()
                         + userData.fname.slice(1)}
-                    lname={userData.lname.charAt(0).toUpperCase()
+                    lname={userData && userData.lname.charAt(0).toUpperCase()
                         + userData.lname.slice(1)}
-                    uname={userData.uname}
-                    email={userData.email}
-                    role={userData.role}
+                    uname={userData && userData.uname}
+                    email={userData && userData.email}
+                    role={userData && userData.role}
                 />
             </div>
             <hr></hr>
@@ -163,7 +167,7 @@ const LoggedInLinks = () => {
                 </Button>
             </div>
             <div id="Messages-div">
-                {messages.map((message, key) =>
+                {messages && messages.map((message, key) =>
                     <Message
                         key={key}
                         id={message.id}

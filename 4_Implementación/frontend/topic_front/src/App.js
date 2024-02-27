@@ -29,8 +29,9 @@ function App() {
   return (
       <div id="App">
         <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'></link>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></link>
         <BrowserRouter>
-          <Navbar />
+          {window.location.pathname.split('/')[3] !== 'search' ? <Navbar /> : <Navbar />}
           <div id='App-container' className="container p-4">
           <Routes>
             <Route path='/register' element={<Register />} />

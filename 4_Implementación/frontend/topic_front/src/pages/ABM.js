@@ -14,7 +14,17 @@ const ShowABM = () => {
     }, []);
 
     const GetUsers = () => {
-        fetch('/users/users')
+        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+    
+        const requestOptions = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${JSON.parse(token).access_token}`
+        }
+        }
+
+        fetch('/users/users', requestOptions)
             .then(response => Promise.all([
                 response.json(),
                 response.status
