@@ -144,8 +144,9 @@
     color: azure;
     font-family: 'Roboto Mono', monospace;
     height: flex;
-    margin-left: 35rem;
-    margin-right: 34rem;
+    margin-left: 40rem;
+    margin-right: 40rem;
+    padding: 0rem;
 }
 
 .form-control::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */

@@ -1,0 +1,45 @@
+#search-list-item {
+    background-color: #282c3400;
+    color: azure;
+    font-family: 'Roboto';
+    font-size: 1.5rem;
+    border: #12121200;
+    padding: 0rem;
+}
+
+#profile-search-card {
+    width: flex;
+    height: fit-content;
+    justify-content: left;
+    align-content: left;
+    background-color: #282c3400;
+    border: #12121200;
+    color: azure;
+    font-family: 'Roboto';
+}
+
+#profile-search-body {
+    padding: 0;
+    height: max-content;
+}
+
+#presentation-search-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-content: left;
+}
+
+#profile-search-image {
+    height: 4rem;
+    width: 4rem;
+    object-fit: fill;
+    align-content: center;
+    justify-content: center;
+    opacity: 1;
+    margin-top: 1rem;
+    margin-left: 1rem;
+    background-image: url('assets/profile.png');
+    background-size: 2.5rem;
+    background-repeat: no-repeat;
+}

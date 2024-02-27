@@ -3,22 +3,18 @@ import { Link } from 'react-router-dom';
 import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useAuth, logout } from './auth';
-import { useState } from 'react';
-import { Collapse } from 'bootstrap';
+import { useState, useRef } from 'react';
+import ProfileSearchCard from './profileSearchCard';
 import Swal from 'sweetalert2';
 
-const LoggedInLinks = ({ user, role }) => {
+const LoggedInLinks = ({ user, role, users, setUsers, collapseRef }) => {
     
     const [clickedOnSearch, setClickedOnSearch] = useState(false)
-
-    const [users, setUsers] = useState([]);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
     
     const performSearch = (data) => {
         const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
-        
-        console.log(JSON.parse(token).access_token)
 
         const requestOptions = {
         method: 'GET',
@@ -37,20 +33,28 @@ const LoggedInLinks = ({ user, role }) => {
             const body = data[0]
             const status = data[1]
             if (status === 200) {
-                setUsers(body)
+                const add = Object.keys(body).length === 0 ? [] : body
+                setUsers(add)
             }
             else {
                 fireToastError(body)
             }
         })
-    }
 
-    const setClickedAndCloseCollapse = (clicked) => {
-        setClickedOnSearch(clicked)
-        var collapseElement = new Collapse(document.getElementById('collapseUsers'), {toggle: false});
-        collapseElement.hide();
+        if (users.length > 0) {
+            collapseRef.current.classList.add('show')
+        }
     }
     
+    const unsetClickedAndCloseCollapse = () => {
+        setClickedOnSearch(false);
+    
+        // Hide the collapse if it's open
+        if (collapseRef.current !== null && collapseRef.current.classList.contains('show')) {
+            collapseRef.current.classList.remove('show');
+        }
+      };
+
     const fireToastError = (message) => {
         Swal.fire({
             title: "<h5 style='color:azure; font-size:1.3rem'>Error</h5>",
@@ -78,7 +82,7 @@ const LoggedInLinks = ({ user, role }) => {
                     <li className="nav-item active">
                         <Link id='login-link' className="nav-link" to="/users">ABM</Link>
                     </li>
-                    : null}
+                : null}
                 <div className="collapse navbar-collapse" id="navbarNavDarkDropdown">
                     <ul className="navbar-nav">
                         <li className="nav-item dropdown">
@@ -96,7 +100,7 @@ const LoggedInLinks = ({ user, role }) => {
                             <form className='form-center ms-auto' id='search-form' onSubmit={handleSubmit(performSearch)}>
                                 <Form.Group>
                                     <div className="d-flex flex-row">
-                                        <Button id="close-search-button" type="button" title='Close search bar' onClick={() => setClickedAndCloseCollapse(false)}>
+                                        <Button id="close-search-button" type="button" title='Close search bar' onClick={() => unsetClickedAndCloseCollapse()}>
                                             <i className="bi-x-lg"></i>
                                         </Button>
                                         <Form.Control
@@ -132,6 +136,10 @@ const LoggedOutLinks = () => {
 
 const Navbar = () => {
 
+    const [users, setUsers] = useState([]);
+
+    const collapseRef = useRef(null);
+    
     // Extract role from session
     const [user, role] = useAuth()
 
@@ -150,16 +158,31 @@ const Navbar = () => {
                                 <LoggedInLinks 
                                     user={user} 
                                     role={role}
+                                    users={users}
+                                    setUsers={setUsers}
+                                    collapseRef={collapseRef}
                                 /> : <LoggedOutLinks />}
                         </ul>
                     </div>
                 </div>
             </nav>
-            <div class="collapse" id="collapseUsers">
-                <div class="card card-body" id="collapseUsersBody">
-                    Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.
+            {users.length != 0 &&
+            <div className="collapse" id="collapseUsers" ref={collapseRef}>
+                <div className="card card-body" id="collapseUsersBody">
+                    <ul class="list-group">
+                        {users.map((user, key) => 
+                            <ProfileSearchCard
+                                key={key}
+                                user_id={user.id}
+                                uname={user.uname}
+                                fname={user.fname}
+                                lname={user.lname}
+                            />
+                        )}
+                    </ul>
                 </div>
             </div>
+            }
         </>
     )
 }

@@ -23,6 +23,7 @@ import "./styles/Edit.css";
 import "./styles/notfound.css";
 import "./styles/RecoverPassword.css";
 import "./styles/RecoverPasswordNewPass.css";
+import "./styles/profileSearchCard.css";
 import "./App.css";
 
 function App() {
@@ -47,7 +48,7 @@ function App() {
           </Routes>
           </div>
         </BrowserRouter>
-        </div>
+      </div>
   );
 }
 
