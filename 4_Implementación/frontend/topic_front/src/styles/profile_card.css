@@ -36,3 +36,78 @@
 #role {
     color: #a892b4;
 }
+
+#btn-follow-2 {
+    background-color: #8e4996;
+    color: azure;
+    border-color: #8e4996;
+    size: 100px;
+    width: 5rem;
+    height: 3rem;
+    text-align: center;
+    align-items: right;
+    justify-content: center;
+    margin-top: 1.3rem;
+    margin-left: 2.9rem;
+    padding-top: 0.7rem;
+    box-shadow: 5px 5px 30px #12141f67;
+    font-family: 'Roboto', sans-serif;
+}
+
+#btn-follow-2:hover {
+    background-color: #b059ba;
+    color: azure;
+    border-color: #b059ba;
+    size: 100px;
+    width: 5rem;
+    height: 3rem;
+    text-align: center;
+    align-items: right;
+    justify-content: center;
+    margin-top: 1.3rem;
+    margin-left: 2.9rem;
+    padding-top: 0.6rem;
+    box-shadow: 5px 5px 30px #12141f67;
+}
+
+#already-followed-text-2 {
+    color: #b9c4ce;
+    font-size: 1.1rem;
+    margin-top: 1.8rem;
+    margin-left: 2.1rem;
+    margin-bottom: 0rem;
+    align-content: right;
+    justify-content: center;
+}
+
+#btn-edit {
+    background-color: rgba(57, 161, 126, 0.856);
+    border-color: rgba(57, 161, 126, 0.856);
+    color: azure;
+    margin-top: 1.3rem;
+    margin-left: 3.23rem;
+    padding-top: 0.6rem;
+    size: 100px;
+    width: 4rem;
+    height: 2.6rem;
+    text-align: center;
+    align-items: right;
+    justify-content: center;
+    box-shadow: 5px 5px 30px #12141f67;
+}
+
+#btn-edit:hover {
+    background-color: rgba(74, 214, 168, 0.856);
+    border-color: rgba(74, 214, 168, 0.856);
+    color: azure;
+    margin-top: 1.3rem;
+    margin-left: 3.23rem;
+    padding-top: 0.5rem;
+    size: 100px;
+    width: 4rem;
+    height: 2.6rem;
+    text-align: center;
+    align-items: right;
+    justify-content: center;
+    box-shadow: 5px 5px 30px #12141f67;
+}

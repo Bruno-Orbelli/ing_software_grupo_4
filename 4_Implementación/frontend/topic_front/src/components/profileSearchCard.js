@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 const ProfileSearchCard = (props) => {
 
     const [followed, setFollowed] = useState(false)
+
+    const navigate = useNavigate()
     
     const uname = props.uname
     const fname = props.fname.charAt(0).toUpperCase() + props.fname.slice(1)
@@ -69,6 +72,11 @@ const ProfileSearchCard = (props) => {
         })
     }
 
+    const navigateAndReload = () => {
+        navigate('/user/' + user_id)
+        window.location.reload()
+    }
+
     const fireToastSuccess = (message) => {
         Swal.fire({
             title: "<h5 style='color:azure; font-size:1.5rem'>Success!</h5>",
@@ -98,24 +106,33 @@ const ProfileSearchCard = (props) => {
     }
     
     return (
-        <li id="search-list-item" class="list-group-item">
-            <div id='profile-search-card' className="card">
-                <div id="profile-search-body" className="card-body">
-                    <div id="presentation-search-row" className='row-12'>
-                        <div id="profile-search-image" class="col-1"></div>
-                        <div className='col-6'>
-                            <h5 className="card-title">{uname}</h5>
-                            <p className="card-text">{fname} {lname}</p>
-                            <p id='role' className="card-text">{roleName}</p>
+        <>
+            <li id="search-list-item" className="list-group-item" onClick={() => navigateAndReload()}>
+                <div id='profile-search-card' className="card">
+                    <div id="profile-search-body" className="card-body">
+                        <div id="presentation-search-row" className='row-12'>
+                            <div id="profile-search-image" class="col-1"></div>
+                            <div className='col-6'>
+                                <h5 id="profile-search-uname" className="card-title">{uname}</h5>
+                                <p id="profile-search-name" className="card-text">{fname} {lname}</p>
+                                <p id='role' className="card-text">{roleName}</p>
+                            </div>
+                            {!followed ? 
+                            <div className='col-6 align-end'>
+                                <button id="btn-follow" className="btn btn-primary" onClick={() => followUser()}>Follow</button>
+                            </div> : (user_id !== viewer_user_id ?
+                                <div className='col-6 align-end'>
+                                    <p id="already-followed-text">
+                                        <i className="bi bi-check-lg"> Following</i>
+                                    </p>
+                                </div>  : null)
+                            }
                         </div>
-                        {!followed && 
-                        <div className='col-6 align-end'>
-                            <button id="btn-follow" className="btn btn-primary" onClick={() => followUser()}>Follow</button>
-                        </div> }
                     </div>
                 </div>
-            </div>
-        </li>
+            </li>
+            <hr id='search-divider'></hr>
+        </>
     )
 }
 

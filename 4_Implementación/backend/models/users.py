@@ -16,20 +16,21 @@ class User(db.Model):
                                 secondary=Followship.__table__.name, 
                                 primaryjoin=id == Followship.__table__.c.followed_id,
                                 secondaryjoin=id == Followship.__table__.c.follower_id,
-                                back_populates='following',
+                                back_populates='followers',
                                 cascade="all, delete"
                                 ) # This is to get the followers of the user
     following = db.relationship('User',
                                 secondary=Followship.__table__.name,
                                 primaryjoin=id == Followship.__table__.c.follower_id,
                                 secondaryjoin=id == Followship.__table__.c.followed_id,
-                                back_populates='followers',
+                                back_populates='following',
                                 cascade="all, delete"
                                 ) # This is to get the users followed by the original user
     admin = db.Column(db.Boolean, default=False)
 
     def getModel(users):
         message_model = Message.getModel(users)
+        user_abbreviated_model = User.getAbbreviatedModel(users)
         user_model = users.model(
         "User", {
             'id': fields.Integer(description='User id', skip_none=True),
@@ -38,6 +39,20 @@ class User(db.Model):
             'uname': fields.String(description='User username', skip_none=True),
             'email': fields.String(description='User email', skip_none=True),
             'messages': fields.List(fields.Nested(message_model), description='User messages', skip_none=True),
+            'followers': fields.List(fields.Nested(user_abbreviated_model), description='User followers', skip_none=True),
+            'following': fields.List(fields.Nested(user_abbreviated_model), description='User followers', skip_none=True),
+            'admin': fields.Boolean(description='User admin status', skip_none=True)
+        })
+        return user_model
+    
+    def getAbbreviatedModel(users):
+        user_model = users.model(
+        "User", {
+            'id': fields.Integer(description='User id', skip_none=True),
+            'fname': fields.String(description='User first name', skip_none=True),
+            'lname': fields.String(description='User last name', skip_none=True),
+            'uname': fields.String(description='User username', skip_none=True),
+            'email': fields.String(description='User email', skip_none=True),
             'admin': fields.Boolean(description='User admin status', skip_none=True)
         })
         return user_model

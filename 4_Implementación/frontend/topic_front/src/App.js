@@ -24,6 +24,7 @@ import "./styles/notfound.css";
 import "./styles/RecoverPassword.css";
 import "./styles/RecoverPasswordNewPass.css";
 import "./styles/profileSearchCard.css";
+import "./styles/profileTabMenu.css"
 import "./App.css";
 
 function App() {
@@ -32,19 +33,19 @@ function App() {
         <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'></link>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></link>
         <BrowserRouter>
-          {window.location.pathname.split('/')[3] !== 'search' ? <Navbar /> : <Navbar />}
+          <Navbar />
           <div id='App-container' className="container p-4">
           <Routes>
             <Route path='/register' element={<Register />} />
             <Route path='/login' element={<LoginUser />} />
             <Route path='/' element={<Home />} />
-            <Route path='/profile' element={<Profile />} />
+            <Route path='/user/:id' element={<Profile />} />
             <Route path='/users' element={<ShowUsers />} />
-            <Route path='/users/user/:id/edit' element={<EditUser />} />
-            <Route path='/404' element={<NotFound />} />
-            <Route path='*' element={<NotFound />} />
+            <Route path='/edit/:id' element={<EditUser />} />
             <Route path='/recovery/form' element={<RecoverPassword />} />
             <Route path='/recovery/newpassword/:token' element={<RecoverPasswordNewPass />} />
+            <Route path='/404' element={<NotFound />} />
+            <Route path='*' element={<NotFound />} />
           </Routes>
           </div>
         </BrowserRouter>

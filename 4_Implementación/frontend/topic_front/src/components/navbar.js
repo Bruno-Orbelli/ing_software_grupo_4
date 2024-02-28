@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Form, Button } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useAuth, logout } from './auth';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ProfileSearchCard from './profileSearchCard';
 import Swal from 'sweetalert2';
 
@@ -12,10 +12,15 @@ const LoggedInLinks = ({ user, role, users, setUsers, collapseRef }) => {
     const [clickedOnSearch, setClickedOnSearch] = useState(false)
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    
-    const performSearch = (data) => {
-        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
 
+    const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+    const viewer_user_id = JSON.parse(atob(token.split('.')[1])).user_id
+    
+    useEffect(() => {
+        window.addEventListener("beforeunload", eraseSearches);
+    })
+
+    const performSearch = (data) => {
         const requestOptions = {
         method: 'GET',
         headers: {
@@ -54,6 +59,11 @@ const LoggedInLinks = ({ user, role, users, setUsers, collapseRef }) => {
             collapseRef.current.classList.remove('show');
         }
       };
+    
+    const eraseSearches = () => {
+        setUsers([])
+        reset()
+    }
 
     const fireToastError = (message) => {
         Swal.fire({
@@ -90,7 +100,7 @@ const LoggedInLinks = ({ user, role, users, setUsers, collapseRef }) => {
                                 Account
                             </Link>
                             <ul id='drop' className="dropdown-menu dropdown-menu-dark">
-                                <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
+                                <li><Link className="dropdown-item" to={"/user/" + viewer_user_id}>Profile</Link></li>
                                 <li><Link className="dropdown-item" to="/login" onClick={() => { logout() }}>Log out</Link></li>
                             </ul>
                         </li>
@@ -169,7 +179,7 @@ const Navbar = () => {
             {users.length != 0 &&
             <div className="collapse" id="collapseUsers" ref={collapseRef}>
                 <div className="card card-body" id="collapseUsersBody">
-                    <ul class="list-group">
+                    <ul className="list-group">
                         {users.map((user, key) => 
                             <ProfileSearchCard
                                 key={key}

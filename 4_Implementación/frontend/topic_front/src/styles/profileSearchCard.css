@@ -7,6 +7,17 @@
     padding: 0rem;
 }
 
+#search-list-item:hover {
+    background-color: #61687b;
+    color: azure;
+    font-family: 'Roboto';
+    font-size: 1.5rem;
+    border: #12121200;
+    padding: 0rem;
+    cursor: pointer;
+}
+
+
 #profile-search-card {
     width: flex;
     height: fit-content;
@@ -37,9 +48,74 @@
     align-content: center;
     justify-content: center;
     opacity: 1;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     margin-left: 1rem;
     background-image: url('assets/profile.png');
     background-size: 2.5rem;
     background-repeat: no-repeat;
+}
+
+#profile-search-uname {
+    font-size: 1.4rem;
+    align-content: center;
+    justify-content: center;
+    padding-top: 1rem;
+    color: azure;
+    font-family: 'Roboto';
+}
+
+#profile-search-name {
+    font-size: 1rem;
+    align-content: center;
+    justify-content: center;
+    padding-top: 0rem;
+    color: rgb(204, 216, 216);
+    font-family: 'Roboto';
+}
+
+#search-divider {
+    color: #6e7275;
+    margin: 0rem;
+}
+
+#btn-follow {
+    background-color: #8e4996;
+    color: azure;
+    border-color: #8e4996;
+    size: 100px;
+    width: 5rem;
+    height: 3rem;
+    text-align: center;
+    align-items: right;
+    justify-content: center;
+    margin-top: 1.3rem;
+    margin-left: 3.5rem;
+    padding-top: 0.7rem;
+    box-shadow: 5px 5px 30px #12141f67;
+    font-family: 'Roboto', sans-serif;
+}
+
+#btn-follow:hover {
+    background-color: #b059ba;
+    color: azure;
+    border-color: #b059ba;
+    size: 100px;
+    width: 5rem;
+    height: 3rem;
+    text-align: center;
+    align-items: right;
+    justify-content: center;
+    margin-top: 1.3rem;
+    margin-left: 3.5rem;
+    padding-top: 0.6rem;
+    box-shadow: 5px 5px 30px #12141f67;
+}
+
+#already-followed-text {
+    color: #b9c4ce;
+    font-size: 1.1rem;
+    margin-top: 1.8rem;
+    margin-left: 2.5rem;
+    align-content: right;
+    justify-content: center;
 }

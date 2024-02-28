@@ -19,7 +19,7 @@ class FollowshipsResource(Resource):
     def get(self):
         '''
         Method to list all followships. GET request.
-        Filter by (only if admin):
+        Filter by:
         - follower_id: integer
         - followed_id: integer
         '''
@@ -29,16 +29,12 @@ class FollowshipsResource(Resource):
                 return abort(403, 'You are not allowed to access this resource.')
             
             followships = Followship.query
-            if not get_jwt().get('role'):
-                followships = followships.filter_by(follower_id=get_jwt().get('user_id'))  # Get user's followships from id
-            else:
-                # If admin, allow for filtering
-                for key in request.args:
-                    if key == 'follower_id':
-                        followships = followships.filter(Followship.follower_id == int(request.args[key]))
-                        print(request.args[key])
-                    elif key == 'followed_id':
-                        followships = followships.filter(Followship.followed_id == int(request.args[key]))
+            # If admin, allow for filtering
+            for key in request.args:
+                if key == 'follower_id':
+                    followships = followships.filter(Followship.follower_id == int(request.args[key]))
+                elif key == 'followed_id':
+                    followships = followships.filter(Followship.followed_id == int(request.args[key]))
             
             if not followships.all():
                 return {}, 200
@@ -64,7 +60,7 @@ class FollowshipsResource(Resource):
             follower_id = get_jwt().get('user_id')
             followed_id = request_data['followed_id']
 
-            if followed_id == follower_id:
+            if int(followed_id) == int(follower_id):
                 return abort(400, 'You cannot follow yourself.')
 
             # Add followship to database

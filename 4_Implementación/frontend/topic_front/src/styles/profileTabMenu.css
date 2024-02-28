@@ -1,0 +1,26 @@
+#profileTabMenu {
+    margin-left: 10rem;
+    margin-right: 10rem;
+    margin-top: 2rem;
+    border-color: rgba(85, 75, 97, 0.78);
+}
+
+#followers-tab-pane {
+    margin-left: 10rem;
+    margin-right: 10rem;
+}
+
+.nav-tabs .nav-link {
+    background-color: rgba(85, 75, 97, 0.78);
+    color: azure;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: rgba(101, 90, 116, 0.78);
+    color: rgb(247, 255, 255);
+}
+
+.nav-tabs .nav-link.active {
+    background-color: rgba(85, 75, 97, 0.78);
+    color: azure;
+}

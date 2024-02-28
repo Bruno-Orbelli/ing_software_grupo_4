@@ -28,7 +28,8 @@ const ShowEditUser = () => {
             }
         }
 
-        if (id !== JSON.parse(atob(JSON.parse(token).access_token.split('.')[1])).user_id) {
+        if (id !== JSON.parse(atob(JSON.parse(token).access_token.split('.')[1])).user_id.toString()) {
+            console.log(id, JSON.parse(atob(JSON.parse(token).access_token.split('.')[1])).user_id)
             navigate('/');
         }
         
@@ -41,7 +42,9 @@ const ShowEditUser = () => {
                 const user = data[0]
                 const status = data[1]
                 if (status === 200) {
-                    //console.log(user)
+                    delete user.followers
+                    delete user.messages
+                    delete user.following
                     setInputs(user)
                 }
                 else {
@@ -64,7 +67,7 @@ const ShowEditUser = () => {
 
         // Check if inputs are empty
         if (inputs.fname === '' || inputs.lname === '' || inputs.uname === '' || inputs.email === '') {
-            fireToastError('Please fill all the fields')
+            fireToastError('Please fill all of the fields.')
             return
         }
 
@@ -84,7 +87,7 @@ const ShowEditUser = () => {
                 const status = data[1]
                 if (status === 200) {
                     //console.log(message)
-                    navigate('/users');
+                    navigate('/');
                     fireToastSuccess(message.uname)
                 }
                 else {
@@ -135,19 +138,19 @@ const ShowEditUser = () => {
                             <div className="col-12">
                                 <div className="mb-3">
                                     <label id="login-text">First Name</label>
-                                    <input type="text" value={inputs.fname} className="form-control" name="fname" onChange={handleChange} />
+                                    <input type="text" value={inputs.fname && (inputs.fname.charAt(0).toUpperCase() + inputs.fname.substring(1))} className="form-control" name="fname" onChange={handleChange} />
                                 </div>
                                 <div className="mb-3">
                                     <label id="login-text">Last Name</label>
-                                    <input type="text" value={inputs.lname} className="form-control" name="lname" onChange={handleChange} />
+                                    <input type="text" value={inputs.lname && (inputs.lname.charAt(0).toUpperCase() + inputs.lname.substring(1))} className="form-control" name="lname" onChange={handleChange} />
                                 </div>
                                 <div className="mb-3">
                                     <label id="login-text">User Name</label>
-                                    <input type="text" value={inputs.uname} className="form-control" name="uname" onChange={handleChange} />
+                                    <input type="text" value={inputs.uname && inputs.uname} className="form-control" name="uname" onChange={handleChange} />
                                 </div>
                                 <div className="mb-3">
                                     <label id="login-text">Email</label>
-                                    <input type="email" value={inputs.email} className="form-control" name="email" onChange={handleChange} />
+                                    <input type="email" value={inputs.email && inputs.email} className="form-control" name="email" onChange={handleChange} />
                                 </div>
                                 <div className="mb-3">
                                     <label id="login-text">Password</label>
@@ -171,10 +174,9 @@ const LoggedInLinks = () => {
     const [user, role] = useAuth();
 
     if (user) {
-        const isAdmin = role.role;
         return (
             <>
-                {isAdmin ? <ShowEditUser /> : <NotFound />}
+                {<ShowEditUser />}
             </>
         )
     }
