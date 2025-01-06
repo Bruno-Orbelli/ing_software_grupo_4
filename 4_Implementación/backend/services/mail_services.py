@@ -11,7 +11,7 @@ mail_templates = Namespace('mailtemplates', description='MailTemplates endpoints
 
 mail_model = MailTemplate.getModel(mail_templates)
 
-@mail_templates.route('/mailtemplates')
+@mail_templates.route('/')
 class MailTemplatesResources(Resource):
     
     @mail_templates.marshal_list_with(mail_model, skip_none=True)
@@ -48,7 +48,7 @@ class MailTemplatesResources(Resource):
                 raise e
             return abort(500, f'Error getting mail templates: \'{type(e)}: {e}\'.')
 
-@mail_templates.route('/mailtemplate/<id>')
+@mail_templates.route('/<id>')
 class MailTemplateResources(Resource):
     
     @mail_templates.marshal_with(mail_model, skip_none=True)
