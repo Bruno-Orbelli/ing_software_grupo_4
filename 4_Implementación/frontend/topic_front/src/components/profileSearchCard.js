@@ -38,7 +38,7 @@ const ProfileSearchCard = (props) => {
             const body = data[0];
             const status = data[1];
             if (status === 200) {
-              if (body.some(followship => followship.followed_id === user_id)) {
+              if (Array.isArray(body) && body.some(followship => followship.followed_id === user_id)) {
                 setFollowed(true);
               }
             } else {

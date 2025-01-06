@@ -3,6 +3,7 @@ from werkzeug.exceptions import NotFound, Forbidden
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from models.messages import Message
+from models.users import User
 from utils.utils import db
 
 messages = Namespace('messages', description='Messages endpoints namespace')
@@ -167,3 +168,46 @@ class MessageResources(Resource):
             if isinstance(e, (NotFound, Forbidden)):
                 raise e
             return abort(500, f'Error deleting message: \'{type(e)}: {e}\'.')
+        
+# Manage Likes
+@messages.route('/messages/<id>/update_likes')
+class MessageLikesResource(Resource):
+    @jwt_required()
+    def put(self, id):
+        '''
+        Method to update likes of a message. PUT request.
+        Expects a JSON with "like": true to add a like, false to remove it
+        '''
+        try:
+            message = Message.query.get(id)
+            user = User.query.get(get_jwt().get('user_id'))
+            # Check if token is not recovery
+            if get_jwt().get('recovery') == True:
+                return abort(403, 'You are not allowed to access this resource.')
+            
+            # Check if message exists
+            if not message:
+                return abort(404, 'Message does not exist.')
+            
+            request_data = request.get_json()
+            # Check if like is in request
+            if 'like' not in request_data:
+                return abort(400, 'Missing like field in request.')
+            
+            # Check if like is boolean
+            if not isinstance(request_data['like'], bool):
+                return abort(400, 'Invalid like field. Must be a boolean.')
+            
+            # Add or remove like
+            if request_data['like']:
+                message.likes += 1
+            else:
+                message.likes -= 1
+            db.session.commit()
+            return 200
+        
+        except Exception as e:
+            db.session.rollback()
+            if isinstance(e, NotFound):
+                raise e
+            return abort(500, f'Error updating likes: {str(e)}')

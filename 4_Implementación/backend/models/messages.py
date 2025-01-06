@@ -6,6 +6,7 @@ class Message(db.Model):
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.String(500), nullable=False)
     likes = db.Column(db.Integer, default=0)
+    likers = db.relationship('Likes', backref='message', lazy='dynamic')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user_data = db.relationship('User', backref='userData')
     create_at = db.Column(db.DateTime, server_default=db.func.now(), default=db.func.now())
@@ -17,6 +18,12 @@ class Message(db.Model):
             'title': fields.String(description='Message title', skip_none=True),
             'content': fields.String(description='Message content', skip_none=True),
             'likes': fields.Integer(description='Message likes', skip_none=True),
+            'likers': fields.List(fields.Nested({
+                'id': fields.Integer(description='Like id', skip_none=True),
+                'user_id': fields.Integer(description='User id', skip_none=True),
+                'message_id': fields.Integer(description='Message id', skip_none=True),
+                'created_at': fields.DateTime(description='Like creation date', skip_none=True)
+            }, skip_none=True)),
             'user_id': fields.Integer(description='User id', skip_none=True),
             'user_data': fields.Nested({
                 'fname': fields.String(description='User first name', skip_none=True),

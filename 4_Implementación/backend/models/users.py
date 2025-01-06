@@ -12,6 +12,7 @@ class User(db.Model):
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(150))
     messages = db.relationship('Message', backref='user', lazy=True, cascade="all, delete-orphan") # This is to get the messages of the user
+    liked_messages = db.relationship('Likes', backref='user', lazy='dynamic')
     followers = db.relationship('User', 
                                 secondary=Followship.__table__.name, 
                                 primaryjoin=id == Followship.__table__.c.followed_id,
