@@ -11,7 +11,7 @@ followships = Namespace('followships', description='Followships endpoints namesp
 
 followship_model = Followship.getModel(followships)
 
-@followships.route('/')
+@followships.route('/followships')
 class FollowshipsResource(Resource):
     
     @followships.marshal_with(followship_model, skip_none=True)
@@ -81,7 +81,7 @@ class FollowshipsResource(Resource):
                 raise e
             return abort(500, f'Error following user: \'{type(e)}: {e}\'.')
 
-@followships.route('/<id>')
+@followships.route('/followship/<id>')
 class FollowshipsResource(Resource):
 
     @followships.marshal_with(followship_model, skip_none=True)

@@ -6,11 +6,11 @@ from flask_restx import Namespace, Resource
 from models.users import User
 from utils.utils import db, recovery_blist
 
-users = Namespace('users', description='Users endpoints namespace') # This generates the path /users
+users = Namespace('users', description='Users endpoints namespace')
 
 user_model = User.getModel(users)
 
-@users.route('/')
+@users.route('/users')
 class UsersResource(Resource):
     
     @jwt_required()
@@ -50,7 +50,7 @@ class UsersResource(Resource):
         except Exception as e:
             return abort(500, f'Error getting users: \'{type(e)}: {e}\'.')
 
-@users.route('/<id>')
+@users.route('/user/<id>')
 class UserResources(Resource):
     
     @jwt_required()

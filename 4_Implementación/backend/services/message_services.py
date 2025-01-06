@@ -9,7 +9,7 @@ messages = Namespace('messages', description='Messages endpoints namespace')
 
 message_model = Message.getModel(messages)
 
-@messages.route('/')
+@messages.route('/messages')
 class MessagesResources(Resource):
     @messages.marshal_list_with(message_model, skip_none=True)
     @jwt_required()
@@ -79,7 +79,7 @@ class MessagesResources(Resource):
             db.session.rollback()
             return abort(500, f'Error saving message: \'{type(e)}: {e}\'.')
 
-@messages.route('/<id>')
+@messages.route('/message/<id>')
 class MessageResources(Resource):
 
     @messages.marshal_with(message_model, skip_none=True)
