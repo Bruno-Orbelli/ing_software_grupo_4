@@ -103,9 +103,15 @@ const Message = (props) => {
                                 + author_data.fname.slice(1)} {author_data.lname.charAt(0).toUpperCase() + author_data.lname.slice(1)}</small>
                             <h5 id='message-title' className="card-title">{title}</h5>
                             <p className="card-text">{content}</p>
-                            <p id='stars' className="card-text" onClick={handleLike} style={{ cursor: 'pointer' }}>
-                                {isLiked ? '💜' : '🤍'} {likes}
-                            </p>
+                            <div className='col-11'>
+                                <span>
+                                    <span id='stars' onClick={handleLike} style={{ cursor: 'pointer', marginRight: '10px' }}>
+                                        {isLiked ? '💜' : '🤍'} {likes}
+                                    </span>
+                                    <span id='comments' style={{ cursor: 'pointer', marginRight: '10px' }}>💬</span>
+                                    <span id='repost' style={{ cursor: 'pointer' }}>🔄</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
