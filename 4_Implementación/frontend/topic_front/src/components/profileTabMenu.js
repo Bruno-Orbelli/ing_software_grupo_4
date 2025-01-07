@@ -1,19 +1,74 @@
+import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom"
 import Message from "./message"
 import ProfileSearchCard from "./profileSearchCard"
 import { Button } from "react-bootstrap"
+import { jwtDecode } from 'jwt-decode';
 import Swal from "sweetalert2"
 
+const getUserIdFromToken = () => {
+    const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
+    if (!token) return null;
+  
+    try {
+        const decoded = jwtDecode(JSON.parse(token).access_token);
+        return decoded.user_id; // Asegúrate de que el payload contenga el `user_id`
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
+    }
+  };
+
 const ProfileTabMenu = (props) => {
-    const messages = props.messages
+    const [messages, setMessages] = useState([])
     const followers = props.followers
     const viewer_user_id = props.viewer_user_id
+    const current_user_id = getUserIdFromToken();
+
 
     const user_id = useParams().id
 
+    const addNewMessage = (newMessage) => {
+        setMessages((prevMessages) => [newMessage, ...prevMessages]); // Agrega el nuevo mensaje al inicio
+    };
+
+    const deleteMessage = (id) => {
+        setMessages(messages.filter((message) => message.id !== id));
+      };
+
+    useEffect(() => {
+        /* eslint-disable react-hooks/exhaustive-deps */
+        
+        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+        
+        const requestOptions = {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${JSON.parse(token).access_token}`
+          }
+        }
+        
+        fetch('/users/user/' + user_id, requestOptions)
+            .then(response => Promise.all([
+                response.json(),
+                response.status
+            ]))
+            .then(data => {
+                const user = data[0]
+                const status = data[1]
+                if (status === 200) {
+                    //console.log(user)
+                    setMessages(user.messages)
+                }
+                else {
+                    console.log(user)
+                }
+            })
+    }, []
+    );
+
     const NewMessage = async () => {
-        //console.log(message)
-    
         Swal.fire({
             title: "<h5 style='color:azure; font-size:2rem'>New Message</h5>",
             html: `<input type="text" style='color:azure' id="title" class="swal2-input" placeholder="Title">` +
@@ -28,53 +83,43 @@ const ProfileTabMenu = (props) => {
                 const content = document.getElementById('content').value;
     
                 if (!title || !content) {
-                    Swal.showValidationMessage(`Please, complete all the fields`)
+                    Swal.showValidationMessage(`Please, complete all the fields`);
                 }
             }
-        })
-            .then((result) => {
+        }).then((result) => {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
     
-                const title = document.getElementById('title').value;
-                const content = document.getElementById('content').value;
+            if (result.isConfirmed) {
+                const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
     
-                if (result.isConfirmed) {
+                const body = {
+                    title: title,
+                    content: content
+                };
     
-                    const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+                const requestOptions = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${JSON.parse(token).access_token}`
+                    },
+                    body: JSON.stringify(body)
+                };
     
-                    const body = {
-                        title: title,
-                        content: content
-                    }
-    
-                    const requestOptions = {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${JSON.parse(token).access_token}`
-                        },
-                        body: JSON.stringify(body)
-                    }
-                    //console.log(requestOptions)
-                    fetch('/messages/messages', requestOptions)
-                        .then(response => Promise.all([
-                            response.json(),
-                            response.status
-                        ]))
-                        .then(data => {
-                            const message = data[0]
-                            const status = data[1]
-                            if (status === 201) {
-                                //console.log(message)
-                                fireToastSuccess(message.message)
-                            }
-                            else {
-                                fireToastError(message.message)
-                            }
-                        })
-    
-                }
-            })
-    }
+                fetch('/messages/messages', requestOptions)
+                    .then((response) => Promise.all([response.json(), response.status]))
+                    .then(([message, status]) => {
+                        if (status === 201) {
+                            addNewMessage(message); // Agrega el nuevo mensaje al estado
+                            fireToastSuccess("Message posted successfully!");
+                        } else {
+                            fireToastError("Failed to post the message.");
+                        }
+                    });
+            }
+        });
+    };
     
     const fireToastSuccess = (message) => {
         Swal.fire({
@@ -126,14 +171,18 @@ const ProfileTabMenu = (props) => {
                     <div id="Messages-div">
                         {messages && messages.map((message, key) =>
                             <Message
-                                key={key}
-                                id={message.id}
-                                title={message.title}
-                                content={message.content}
-                                likes={message.likes}
-                                author_id={message.user_id}
-                                author_data={message.user_data}
-                                create_at={message.create_at}
+                            key={key}
+                            id={message.id}
+                            title={message.title}
+                            content={message.content}
+                            likes={message.likes}
+                            author_id={message.user_id}
+                            author_data={message.user_data}
+                            original_message_id={message.original_message_id}
+                            create_at={message.create_at}
+                            current_user_id={current_user_id}
+                            addNewMessage={addNewMessage}
+                            deleteMessage={deleteMessage}
                             />
                         )}
                     </div>

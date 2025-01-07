@@ -3,73 +3,63 @@ import Message from '../components/message';
 import { useAuth } from '../components/auth';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
+import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 
-const NewMessage = async () => {
-  //console.log(message)
-
+const NewMessage = async (addNewMessage) => {
   Swal.fire({
-    title: "<h5 style='color:azure; font-size:2rem'>New Message</h5>",
-    background: '#282c34',
-    font: 'Roboto',
-    html: `<input type="text" style='color:azure' id="title" class="swal2-input" placeholder="Title">` +
-      `<textarea id="content" style='color:azure' class="swal2-textarea" rows="100" cols="33" placeholder="Type your message here..."></textarea>`,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonColor: '#494996',
-    confirmButtonText: 'Submit',
-    preConfirm: async () => {
-      const title = document.getElementById('title').value;
-      const content = document.getElementById('content').value;
+      title: "<h5 style='color:azure; font-size:2rem'>New Message</h5>",
+      background: '#282c34',
+      font: 'Roboto',
+      html: `<input type="text" style='color:azure' id="title" class="swal2-input" placeholder="Title">` +
+          `<textarea id="content" style='color:azure' class="swal2-textarea" rows="100" cols="33" placeholder="Type your message here..."></textarea>`,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonColor: '#494996',
+      confirmButtonText: 'Submit',
+      preConfirm: async () => {
+          const title = document.getElementById('title').value;
+          const content = document.getElementById('content').value;
 
-      if (!title || !content) {
-        Swal.showValidationMessage(`Please, complete all the fields`)
+          if (!title || !content) {
+              Swal.showValidationMessage(`Please, complete all the fields`);
+          }
       }
-    }
   })
-    .then((result) => {
+      .then((result) => {
+          const title = document.getElementById('title').value;
+          const content = document.getElementById('content').value;
 
-      const title = document.getElementById('title').value;
-      const content = document.getElementById('content').value;
+          if (result.isConfirmed) {
+              const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
 
-      if (result.isConfirmed) {
+              const body = {
+                  title: title,
+                  content: content,
+              };
 
-        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+              const requestOptions = {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${JSON.parse(token).access_token}`,
+                  },
+                  body: JSON.stringify(body),
+              };
 
-        const body = {
-          title: title,
-          content: content
-        }
-
-        const requestOptions = {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${JSON.parse(token).access_token}`
-          },
-          body: JSON.stringify(body)
-        }
-        //console.log(requestOptions)
-        fetch('/messages/messages', requestOptions)
-          .then(response => Promise.all([
-            response.json(),
-            response.status
-          ]))
-          .then(data => {
-            const message = data[0]
-            const status = data[1]
-            if (status === 201) {
-              //console.log(message)
-              fireToastSuccess(message.message)
-            }
-            else {
-              fireToastError(message.message)
-            }
-          })
-
-      }
-    })
-}
+              fetch('/messages/messages', requestOptions)
+                  .then((response) => Promise.all([response.json(), response.status]))
+                  .then(([message, status]) => {
+                      if (status === 201) {
+                          addNewMessage(message); // Actualiza la lista de mensajes
+                          fireToastSuccess(message.message);
+                      } else {
+                          fireToastError(message.message);
+                      }
+                  });
+          }
+      });
+};
 
 const fireToastSuccess = (message) => {
   Swal.fire({
@@ -99,17 +89,39 @@ const fireToastError = (message) => {
   })
 }
 
+const getUserIdFromToken = () => {
+  const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
+  if (!token) return null;
+
+  try {
+      const decoded = jwtDecode(JSON.parse(token).access_token);
+      return decoded.user_id; // Asegúrate de que el payload contenga el `user_id`
+  } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+  }
+};
 
 const LoggedInLinks = () => {
 
   const [messages, setMessages] = useState([]); // Esto es un hook
+  const [reload, setReload] = useState(false);
+  const current_user_id = getUserIdFromToken();
 
   const CompareByDate = (a, b) => {
     const dateA = new Date(a.create_at)
     const dateB = new Date(b.create_at)
 
     return dateB - dateA
-  }
+  };
+
+  const addNewMessage = (newMessage) => {
+    setMessages((prevMessages) => [newMessage, ...prevMessages]);
+  };
+
+  const deleteMessage = (id) => {
+    setMessages(messages.filter((message) => message.id !== id));
+  };
 
   useEffect(() => {
     /* eslint-disable react-hooks/exhaustive-deps */
@@ -165,9 +177,13 @@ const LoggedInLinks = () => {
         <hr id='divider-home'></hr>
       </div>
       <div id="new-div">
-        <Button id='login-button' variant="primary" onClick={() => (NewMessage())} className='m-3'>
+      <Button
+        id="login-button"
+        variant="primary"
+        onClick={() => NewMessage(addNewMessage)} // Pasa la función al crear un nuevo mensaje
+        className="m-3">
           New message
-        </Button>
+      </Button>
       </div>
       <div id="Messages-div">
         {messages.sort(CompareByDate).map((message, key) =>
@@ -179,7 +195,11 @@ const LoggedInLinks = () => {
             likes={message.likes}
             author_id={message.user_id}
             author_data={message.user_data}
+            original_message_id={message.original_message_id}
             create_at={message.create_at}
+            current_user_id={current_user_id}
+            addNewMessage={addNewMessage}
+            deleteMessage={deleteMessage}
           />
         )}
       </div>

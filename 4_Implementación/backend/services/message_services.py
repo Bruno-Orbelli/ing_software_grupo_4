@@ -103,6 +103,46 @@ class MessageResources(Resource):
             if isinstance(e, NotFound):
                 raise e
             return abort(500, f'Error getting message: \'{type(e)}: {e}\'.')
+    
+    # Repost with post
+    @messages.marshal_with(message_model, skip_none=True)
+    @jwt_required()
+    def post(self, id):
+        '''
+        Method to repost a message by id. POST request.
+        '''
+        # try:
+        # Check if token is not recovery
+        if get_jwt().get('recovery') == True:
+            return abort(403, 'You are not allowed to create this resource.')
+        
+        message = Message.query.get(id) # Original message
+        if not message:
+            return abort(404, 'Message does not exist.')
+        
+        # Get original message data
+        title = message.title
+        content = message.content
+        user_id = get_jwt().get('user_id')
+        original_message_id = int(id)
+        # Add message to database
+        new_message = Message(
+            title=title, 
+            content=content, 
+            likes=0,
+            user_id=user_id,
+            original_message_id=original_message_id
+            )
+        
+        db.session.add(new_message)
+        db.session.commit()
+
+        # Return success message
+        return new_message, 201
+        # except Exception as e:
+        #     # Rollback and return error message
+        #     db.session.rollback()
+        #     return abort(500, f'Error reposting message: \'{type(e)}: {e}\'.')
         
     @messages.marshal_with(message_model, skip_none=True)
     @jwt_required()

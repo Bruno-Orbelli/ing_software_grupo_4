@@ -6,9 +6,14 @@ const Message = (props) => {
 
     const title = props.title;
     const content = props.content;
+    const author_id = props.author_id;
     const author_data = props.author_data;
     const [likes, setLikes] = useState(props.likes); // Text of the message
     const create_at = props.create_at;
+    const original_message_id = props.original_message_id;
+    const current_user_id = props.current_user_id;
+    console.log(current_user_id)
+    console.log(author_id)
 
     //Change date format
     const date = new Date(create_at);
@@ -56,6 +61,15 @@ const Message = (props) => {
         getIfLiked().then(liked => setIsLiked(liked)).catch(error => console.error(error));
     }, []);
 
+    const fetchUpdatedMessage = async () => {
+        const response = await fetch(`/messages/message/${props.id}`);
+        if (response.ok) {
+            const updatedMessage = await response.json();
+            setLikes(updatedMessage.likes);
+            setIsLiked(updatedMessage.isLiked); // Esto asume que el servidor devuelve esta información
+        }
+    };
+
     const handleLike = async () => {
         const newIsLiked = !isLiked;
         const newLikes = newIsLiked ? likes + 1 : likes - 1;
@@ -83,6 +97,49 @@ const Message = (props) => {
         }
     };
 
+    const handleRepost = async () => {
+        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+    
+        const response = await fetch(`/messages/message/${props.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(token).access_token}`,
+            },
+        });
+    
+        if (response.ok) {
+            const newMessage = await response.json(); // Obtén el nuevo mensaje
+            props.addNewMessage(newMessage); // Actualiza la lista de mensajes en el padre
+        } else {
+            throw new Error('Failed to repost the message');
+        }
+    };
+
+    const HandleDelete = async () => {
+        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`/messages/message/${props.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(token).access_token}`,
+            },
+        });
+
+        if (response.ok) {
+            props.deleteMessage(props.id); // Actualiza la lista de mensajes en el padre
+        } else {
+            throw new Error('Failed to delete the message');
+        }
+    }
+
     return (
         <div id='message' className="card m-3">
             <div className='row'>
@@ -103,13 +160,17 @@ const Message = (props) => {
                                 + author_data.fname.slice(1)} {author_data.lname.charAt(0).toUpperCase() + author_data.lname.slice(1)}</small>
                             <h5 id='message-title' className="card-title">{title}</h5>
                             <p className="card-text">{content}</p>
+                            {original_message_id && <small id="rname">Repost from user {props.author_data.uname}</small>}
                             <div className='col-11'>
                                 <span>
                                     <span id='stars' onClick={handleLike} style={{ cursor: 'pointer', marginRight: '10px' }}>
                                         {isLiked ? '💜' : '🤍'} {likes}
                                     </span>
                                     <span id='comments' style={{ cursor: 'pointer', marginRight: '10px' }}>💬</span>
-                                    <span id='repost' style={{ cursor: 'pointer' }}>🔄</span>
+                                    <span id='repost' onClick={handleRepost} style={{ cursor: 'pointer' }}>🔄</span>
+                                    {current_user_id === author_id && 
+                                        <span id='delete' onClick={HandleDelete} style={{ cursor: 'pointer', marginLeft: '10px' }}>🗑️</span>
+                                    }
                                 </span>
                             </div>
                         </div>

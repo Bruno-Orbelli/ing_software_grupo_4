@@ -2,6 +2,9 @@ from utils.utils import db, ma
 from flask_restx import fields
 
 class Message(db.Model):
+    __tablename__ = 'message'
+
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.String(500), nullable=False)
@@ -10,6 +13,8 @@ class Message(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user_data = db.relationship('User', backref='userData')
     create_at = db.Column(db.DateTime, server_default=db.func.now(), default=db.func.now())
+    original_message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=True)
+    original_message = db.relationship('Message', remote_side=[id], backref='reposts', lazy='joined')
 
     def getModel(messages):
         message_model = messages.model(
@@ -31,7 +36,14 @@ class Message(db.Model):
                 'uname': fields.String(description='User name', skip_none=True),
                 'email': fields.String(description='User email', skip_none=True)
             }, skip_none=True),
-            'create_at': fields.DateTime(description='Message creation date', skip_none=True)
+            'create_at': fields.DateTime(description='Message creation date', skip_none=True),
+            'original_message_id': fields.Integer(description='Original message id', skip_none=True),
+            'original_message': fields.Nested({
+                'id': fields.Integer(description='Original message id', skip_none=True),
+                'title': fields.String(description='Original message title', skip_none=True),
+                'content': fields.String(description='Original message content', skip_none=True),
+                'user_id': fields.Integer(description='Original author id', skip_none=True)
+            }, skip_none=True)
         })
 
         return message_model
