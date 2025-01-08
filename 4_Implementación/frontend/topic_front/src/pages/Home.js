@@ -6,7 +6,7 @@ import { Button } from 'react-bootstrap';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 
-const NewMessage = async (addNewMessage) => {
+const NewMessage = async (reloadWindow) => {
   Swal.fire({
       title: "<h5 style='color:azure; font-size:2rem'>New Message</h5>",
       background: '#282c34',
@@ -51,7 +51,7 @@ const NewMessage = async (addNewMessage) => {
                   .then((response) => Promise.all([response.json(), response.status]))
                   .then(([message, status]) => {
                       if (status === 201) {
-                          addNewMessage(message); // Actualiza la lista de mensajes
+                          reloadWindow(); // Actualiza la lista de mensajes
                           fireToastSuccess(message.message);
                       } else {
                           fireToastError(message.message);
@@ -105,7 +105,6 @@ const getUserIdFromToken = () => {
 const LoggedInLinks = () => {
 
   const [messages, setMessages] = useState([]); // Esto es un hook
-  const [reload, setReload] = useState(false);
   const current_user_id = getUserIdFromToken();
 
   const CompareByDate = (a, b) => {
@@ -115,12 +114,8 @@ const LoggedInLinks = () => {
     return dateB - dateA
   };
 
-  const addNewMessage = (newMessage) => {
-    setMessages((prevMessages) => [newMessage, ...prevMessages]);
-  };
-
-  const deleteMessage = (id) => {
-    setMessages(messages.filter((message) => message.id !== id));
+  const reloadWindow = (id) => {
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -180,7 +175,7 @@ const LoggedInLinks = () => {
       <Button
         id="login-button"
         variant="primary"
-        onClick={() => NewMessage(addNewMessage)} // Pasa la función al crear un nuevo mensaje
+        onClick={() => NewMessage(reloadWindow)} // Pasa la función al crear un nuevo mensaje
         className="m-3">
           New message
       </Button>
@@ -198,8 +193,7 @@ const LoggedInLinks = () => {
             original_message_id={message.original_message_id}
             create_at={message.create_at}
             current_user_id={current_user_id}
-            addNewMessage={addNewMessage}
-            deleteMessage={deleteMessage}
+            reloadWindow={reloadWindow}
           />
         )}
       </div>

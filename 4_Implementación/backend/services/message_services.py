@@ -3,6 +3,7 @@ from werkzeug.exceptions import NotFound, Forbidden
 from flask_jwt_extended import jwt_required, get_jwt
 from flask_restx import Namespace, Resource
 from models.messages import Message
+from models.likes import Likes
 from models.users import User
 from utils.utils import db
 
@@ -184,27 +185,40 @@ class MessageResources(Resource):
         '''
         Method to delete a message by id. DELETE request.
         '''
-        try:
-            message = Message.query.get(id)
+        # try:
+        message = Message.query.get(id)
 
-            # Check if token is not recovery
-            if get_jwt().get('recovery') == True:
-                return abort(403, 'You are not allowed to delete this resource.')
-            
-            # Check if user exists
-            if not message:
-                return abort(404, 'Message does not exist.')
-            
-            # Check if user is the author of the message or is admin
-            if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('role')):
-                return abort(403, 'You are not allowed to delete this resource.')
-            
-            db.session.delete(message)
+        # Check if token is not recovery
+        if get_jwt().get('recovery') == True:
+            return abort(403, 'You are not allowed to delete this resource.')
+        
+        # Check if user exists
+        if not message:
+            return abort(404, 'Message does not exist.')
+        
+        # Check if user is the author of the message or is admin
+        if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('role')):
+            return abort(403, 'You are not allowed to delete this resource.')
+        
+        # Find all likes for this message and delete them
+        likes = Likes.query.filter_by(message_id=id).all()
+        for like in likes:
+            db.session.delete(like)
+
+        #Find repost and delete
+        repost = Message.query.filter_by(original_message_id=id).first()
+        if repost:
+            repost.title = 'Deleted by original author'
+            repost.content = 'Deleted by original author'
+            repost.original_message_id = None
             db.session.commit()
 
-            return {'message': f'Message {message.title} deleted.'}, 204
-        except Exception as e:
-            db.session.rollback()
-            if isinstance(e, (NotFound, Forbidden)):
-                raise e
-            return abort(500, f'Error deleting message: \'{type(e)}: {e}\'.')
+        db.session.delete(message)
+        db.session.commit()
+
+        return {'message': f'Message {message.title} deleted.'}, 204
+        # except Exception as e:
+        #     db.session.rollback()
+        #     if isinstance(e, (NotFound, Forbidden)):
+        #         raise e
+        #     return abort(500, f'Error deleting message: \'{type(e)}: {e}\'.')

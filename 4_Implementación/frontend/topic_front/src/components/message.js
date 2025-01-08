@@ -8,13 +8,13 @@ const Message = (props) => {
     const content = props.content;
     const author_id = props.author_id;
     const author_data = props.author_data;
+    const [original_author, setOriginalAuthor] = useState(null);
     const [likes, setLikes] = useState(props.likes); // Text of the message
     const create_at = props.create_at;
     const original_message_id = props.original_message_id;
     const current_user_id = props.current_user_id;
-    console.log(current_user_id)
-    console.log(author_id)
-
+    const [isLiked, setIsLiked] = useState(false);
+    
     //Change date format
     const date = new Date(create_at);
     const day = date.getDate();
@@ -26,49 +26,61 @@ const Message = (props) => {
     const formatted_hours = hours < 10 ? '0' + hours : hours;
     const formatted_minutes = minutes < 10 ? '0' + minutes : minutes;
     const create_at_time = formatted_hours + ':' + formatted_minutes;
-
-    const getIfLiked = async () => {
-        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
-        if (!token) {
-            throw new Error('No authentication token found');
-        }
-
-        const response = await fetch(`/likes/likes/${props.id}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${JSON.parse(token).access_token}`
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update the likes');
-        }
-
-        const body = await response.json();
-
-        if (body.length === 0) {
-            return false;
-        } else {
-        return true;
-        }
-        
-    };
-
-    const [isLiked, setIsLiked] = useState(false);
-
+    
     useEffect(() => {
-        getIfLiked().then(liked => setIsLiked(liked)).catch(error => console.error(error));
-    }, []);
+        const checkIfLiked = async () => {
+            const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
 
-    const fetchUpdatedMessage = async () => {
-        const response = await fetch(`/messages/message/${props.id}`);
-        if (response.ok) {
-            const updatedMessage = await response.json();
-            setLikes(updatedMessage.likes);
-            setIsLiked(updatedMessage.isLiked); // Esto asume que el servidor devuelve esta información
-        }
-    };
+            const response = await fetch(`/likes/likes/${props.id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${JSON.parse(token).access_token}`
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update the likes');
+            }
+
+            const body = await response.json();
+            setIsLiked(body.length !== 0);
+        };
+
+        checkIfLiked().catch(error => console.error(error));
+    }, [props.id]);
+
+    // Get the original author of the message when it is a repost
+    useEffect(() => {
+        const getOriginalAuthor = async () => {
+            if (original_message_id) {
+                const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch(`/messages/message/${original_message_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${JSON.parse(token).access_token}`
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get original message');
+                }
+
+                const original_message = await response.json();
+                setOriginalAuthor(original_message.user_data.uname);
+            }
+        };
+
+        getOriginalAuthor().catch(error => console.error(error));
+    }, [original_message_id]);
 
     const handleLike = async () => {
         const newIsLiked = !isLiked;
@@ -112,8 +124,7 @@ const Message = (props) => {
         });
     
         if (response.ok) {
-            const newMessage = await response.json(); // Obtén el nuevo mensaje
-            props.addNewMessage(newMessage); // Actualiza la lista de mensajes en el padre
+            props.reloadWindow(); // Actualiza la lista de mensajes en el padre
         } else {
             throw new Error('Failed to repost the message');
         }
@@ -134,11 +145,12 @@ const Message = (props) => {
         });
 
         if (response.ok) {
-            props.deleteMessage(props.id); // Actualiza la lista de mensajes en el padre
+            props.reloadWindow(); // Actualiza la lista de mensajes en el padre
         } else {
             throw new Error('Failed to delete the message');
         }
     }
+
 
     return (
         <div id='message' className="card m-3">
@@ -160,18 +172,21 @@ const Message = (props) => {
                                 + author_data.fname.slice(1)} {author_data.lname.charAt(0).toUpperCase() + author_data.lname.slice(1)}</small>
                             <h5 id='message-title' className="card-title">{title}</h5>
                             <p className="card-text">{content}</p>
-                            {original_message_id && <small id="rname">Repost from user {props.author_data.uname}</small>}
+                            {original_message_id && <small id="rname">Repost from {original_author}</small>}
+                            
                             <div className='col-11'>
-                                <span>
-                                    <span id='stars' onClick={handleLike} style={{ cursor: 'pointer', marginRight: '10px' }}>
-                                        {isLiked ? '💜' : '🤍'} {likes}
+                                {title !== "Deleted by original author" && (
+                                    <span>
+                                        <span id='stars' onClick={handleLike} style={{ cursor: 'pointer', marginRight: '10px' }}>
+                                            {isLiked ? '💜' : '🤍'} {likes}
+                                        </span>
+                                        <span id='comments' style={{ cursor: 'pointer', marginRight: '10px' }}>💬</span>
+                                        <span id='repost' onClick={handleRepost} style={{ cursor: 'pointer' }}>🔄</span>
                                     </span>
-                                    <span id='comments' style={{ cursor: 'pointer', marginRight: '10px' }}>💬</span>
-                                    <span id='repost' onClick={handleRepost} style={{ cursor: 'pointer' }}>🔄</span>
-                                    {current_user_id === author_id && 
-                                        <span id='delete' onClick={HandleDelete} style={{ cursor: 'pointer', marginLeft: '10px' }}>🗑️</span>
-                                    }
-                                </span>
+                                )}
+                                {current_user_id === author_id && 
+                                    <span id='delete' onClick={HandleDelete} style={{ cursor: 'pointer', marginLeft: '10px' }}>🗑️</span>
+                                }
                             </div>
                         </div>
                     </div>

@@ -9,7 +9,7 @@ import Swal from "sweetalert2"
 const getUserIdFromToken = () => {
     const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
     if (!token) return null;
-  
+
     try {
         const decoded = jwtDecode(JSON.parse(token).access_token);
         return decoded.user_id; // Asegúrate de que el payload contenga el `user_id`
@@ -17,38 +17,39 @@ const getUserIdFromToken = () => {
         console.error("Error decoding token:", error);
         return null;
     }
-  };
+};
 
 const ProfileTabMenu = (props) => {
     const [messages, setMessages] = useState([])
     const followers = props.followers
     const viewer_user_id = props.viewer_user_id
     const current_user_id = getUserIdFromToken();
-
-
     const user_id = useParams().id
 
-    const addNewMessage = (newMessage) => {
-        setMessages((prevMessages) => [newMessage, ...prevMessages]); // Agrega el nuevo mensaje al inicio
+    const reloadWindow = (id) => {
+        window.location.reload();
     };
 
-    const deleteMessage = (id) => {
-        setMessages(messages.filter((message) => message.id !== id));
-      };
+    const CompareByDate = (a, b) => {
+        const dateA = new Date(a.create_at)
+        const dateB = new Date(b.create_at)
+
+        return dateB - dateA
+    };
 
     useEffect(() => {
         /* eslint-disable react-hooks/exhaustive-deps */
-        
+
         const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
-        
+
         const requestOptions = {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${JSON.parse(token).access_token}`
-          }
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(token).access_token}`
+            }
         }
-        
+
         fetch('/users/user/' + user_id, requestOptions)
             .then(response => Promise.all([
                 response.json(),
@@ -81,7 +82,7 @@ const ProfileTabMenu = (props) => {
             preConfirm: async () => {
                 const title = document.getElementById('title').value;
                 const content = document.getElementById('content').value;
-    
+
                 if (!title || !content) {
                     Swal.showValidationMessage(`Please, complete all the fields`);
                 }
@@ -89,15 +90,15 @@ const ProfileTabMenu = (props) => {
         }).then((result) => {
             const title = document.getElementById('title').value;
             const content = document.getElementById('content').value;
-    
+
             if (result.isConfirmed) {
                 const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY');
-    
+
                 const body = {
                     title: title,
                     content: content
                 };
-    
+
                 const requestOptions = {
                     method: 'POST',
                     headers: {
@@ -106,12 +107,12 @@ const ProfileTabMenu = (props) => {
                     },
                     body: JSON.stringify(body)
                 };
-    
+
                 fetch('/messages/messages', requestOptions)
                     .then((response) => Promise.all([response.json(), response.status]))
                     .then(([message, status]) => {
                         if (status === 201) {
-                            addNewMessage(message); // Agrega el nuevo mensaje al estado
+                            reloadWindow(); // Agrega el nuevo mensaje al estado
                             fireToastSuccess("Message posted successfully!");
                         } else {
                             fireToastError("Failed to post the message.");
@@ -120,7 +121,7 @@ const ProfileTabMenu = (props) => {
             }
         });
     };
-    
+
     const fireToastSuccess = (message) => {
         Swal.fire({
             title: "<h5 style='color:azure; font-size:1.3rem'>Message posted!</h5>",
@@ -134,7 +135,7 @@ const ProfileTabMenu = (props) => {
             timer: 3000
         })
     }
-    
+
     const fireToastError = (message) => {
         Swal.fire({
             title: "<h5 style='color:azure; font-size:1.3rem'>Error</h5>",
@@ -148,7 +149,7 @@ const ProfileTabMenu = (props) => {
             timer: 6000
         })
     }
-    
+
     return (
         <>
             <ul class="nav nav-tabs" id="profileTabMenu" role="tablist">
@@ -162,44 +163,43 @@ const ProfileTabMenu = (props) => {
             <div class="tab-content" id="tabContent">
                 <div class="tab-pane fade show active" id="message-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
                     {user_id.toString() === viewer_user_id.toString() ?
-                    <div id="new-div">
-                        <Button id='login-button' variant="primary" onClick={() => (NewMessage())} className='m-3'>
-                            New message
-                        </Button>
-                    </div> : null
+                        <div id="new-div">
+                            <Button id='login-button' variant="primary" onClick={() => (NewMessage())} className='m-3'>
+                                New message
+                            </Button>
+                        </div> : null
                     }
                     <div id="Messages-div">
-                        {messages && messages.map((message, key) =>
+                        {messages.sort(CompareByDate).map((message, key) =>
                             <Message
-                            key={key}
-                            id={message.id}
-                            title={message.title}
-                            content={message.content}
-                            likes={message.likes}
-                            author_id={message.user_id}
-                            author_data={message.user_data}
-                            original_message_id={message.original_message_id}
-                            create_at={message.create_at}
-                            current_user_id={current_user_id}
-                            addNewMessage={addNewMessage}
-                            deleteMessage={deleteMessage}
+                                key={key}
+                                id={message.id}
+                                title={message.title}
+                                content={message.content}
+                                likes={message.likes}
+                                author_id={message.user_id}
+                                author_data={message.user_data}
+                                original_message_id={message.original_message_id}
+                                create_at={message.create_at}
+                                current_user_id={current_user_id}
+                                reloadWindow={reloadWindow}
                             />
                         )}
                     </div>
                 </div>
                 <div class="tab-pane fade" id="followers-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                     <div id="followers-div">
-                            {followers && followers.map((follower, key) =>
-                                <ProfileSearchCard
-                                    key={key}
-                                    user_id={follower.id}
-                                    uname={follower.uname}
-                                    fname={follower.fname}
-                                    lname={follower.lname}
-                                />
-                            )}
-                        </div>
+                        {followers && followers.map((follower, key) =>
+                            <ProfileSearchCard
+                                key={key}
+                                user_id={follower.id}
+                                uname={follower.uname}
+                                fname={follower.fname}
+                                lname={follower.lname}
+                            />
+                        )}
                     </div>
+                </div>
             </div>
         </>
     )
