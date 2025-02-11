@@ -41,7 +41,7 @@ class LikesResource(Resource):
         # Verificar si el mensaje existe
         message = Message.query.get(message_id)
         if not message:
-            abort(NotFound.code, "El mensaje no existe.")
+            abort(NotFound.code)
 
         # Verificar si el usuario ya dio 'like'
         existing_like = Likes.query.filter_by(user_id=user_id, message_id=message_id).first()
@@ -58,7 +58,7 @@ class LikesResource(Resource):
 
         db.session.commit()
 
-        return {"message": "Like agregado correctamente."}, 201
+        return 201
 
     @jwt_required()
     def delete(self, message_id):
@@ -86,4 +86,4 @@ class LikesResource(Resource):
         message.likes -= 1
         db.session.commit()
 
-        return {"message": "Like eliminado correctamente."}, 200
+        return 200

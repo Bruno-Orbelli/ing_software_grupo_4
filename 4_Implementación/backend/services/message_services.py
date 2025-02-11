@@ -112,14 +112,13 @@ class MessageResources(Resource):
         '''
         Method to repost a message by id. POST request.
         '''
-        # try:
         # Check if token is not recovery
         if get_jwt().get('recovery') == True:
             return abort(403, 'You are not allowed to create this resource.')
         
         message = Message.query.get(id) # Original message
         if not message:
-            return abort(404, 'Message does not exist.')
+            return abort(NotFound.code)
         
         # Get original message data
         title = message.title
@@ -139,11 +138,8 @@ class MessageResources(Resource):
         db.session.commit()
 
         # Return success message
-        return new_message, 201
-        # except Exception as e:
-        #     # Rollback and return error message
-        #     db.session.rollback()
-        #     return abort(500, f'Error reposting message: \'{type(e)}: {e}\'.')
+        return 201
+        
         
     @messages.marshal_with(message_model, skip_none=True)
     @jwt_required()
@@ -185,7 +181,6 @@ class MessageResources(Resource):
         '''
         Method to delete a message by id. DELETE request.
         '''
-        # try:
         message = Message.query.get(id)
 
         # Check if token is not recovery
@@ -194,7 +189,7 @@ class MessageResources(Resource):
         
         # Check if user exists
         if not message:
-            return abort(404, 'Message does not exist.')
+            return abort(NotFound.code)
         
         # Check if user is the author of the message or is admin
         if not (message.user_id == get_jwt().get('user_id') or get_jwt().get('role')):
@@ -216,9 +211,4 @@ class MessageResources(Resource):
         db.session.delete(message)
         db.session.commit()
 
-        return {'message': f'Message {message.title} deleted.'}, 204
-        # except Exception as e:
-        #     db.session.rollback()
-        #     if isinstance(e, (NotFound, Forbidden)):
-        #         raise e
-        #     return abort(500, f'Error deleting message: \'{type(e)}: {e}\'.')
+        return 200

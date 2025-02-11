@@ -88,25 +88,26 @@ const Message = (props) => {
 
         // Update the state
         setIsLiked(newIsLiked);
-        setLikes(newLikes);
-
+        
         // Make an API call to update the likes in the database
         // try {
-        const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
-        if (!token) {
-            throw new Error('No authentication token found');
-        }
+            const token = localStorage.getItem('REACT_TOKEN_AUTH_KEY')
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
 
-        const response = await fetch(`/likes/likes/${props.id}`, {
-            method: newIsLiked ? 'POST' : 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${JSON.parse(token).access_token}`
-            },
-        });
-        if (!response.ok) {
-            throw new Error('Failed to update the likes');
-        }
+            const response = await fetch(`/likes/likes/${props.id}`, {
+                method: newIsLiked ? 'POST' : 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${JSON.parse(token).access_token}`
+                },
+            });
+            if (!response.ok || response.status === 404) {
+                showPopup('Failed to update the likes.\nTry reloading the page.');
+            }
+
+        setLikes(newLikes);
     };
 
     const handleRepost = async () => {
@@ -122,11 +123,10 @@ const Message = (props) => {
                 'Authorization': `Bearer ${JSON.parse(token).access_token}`,
             },
         });
-    
-        if (response.ok) {
-            props.reloadWindow(); // Actualiza la lista de mensajes en el padre
+        if (!response.ok || response.status === 404) {
+            showPopup('Failed to repost.\nTry reloading the page.');
         } else {
-            throw new Error('Failed to repost the message');
+            props.reloadWindow(); // Actualiza la lista de mensajes en el padre
         }
     };
 
@@ -144,12 +144,16 @@ const Message = (props) => {
             },
         });
 
-        if (response.ok) {
-            props.reloadWindow(); // Actualiza la lista de mensajes en el padre
+        if (!response.ok || response.status === 404) {
+            showPopup('Failed to delete.\nTry reloading the page.');
         } else {
-            throw new Error('Failed to delete the message');
+            props.reloadWindow(); // Actualiza la lista de mensajes en el padre
         }
     }
+
+    const showPopup = (text) => {
+        alert(text);
+    };
 
 
     return (
